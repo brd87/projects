@@ -27,9 +27,17 @@ private:
     std::vector<std::vector<double>> weights;
 public:
     int nNeurons;
+
     void setNeuronActivation(int neuronIndex, double activation) {
     }
     void calculateActivation(const std::vector<double>& inputs) {
+    }
+    //modify
+    void modify_hiBias(const std::vector<double>& newbias) {
+        bias = newbias;
+    }
+    void modify_hiWeights(const std::vector<std::vector<double>>& newweights) {
+        weights = newweights;
     }
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -40,9 +48,17 @@ private:
     std::vector<std::vector<double>> weights;
 public:
     int nNeurons;
+
     void setNeuronActivation(int neuronIndex, double activation) {
     }
     void calculateActivation(const std::vector<double>& inputs) {
+    }
+    //modify
+    void modify_ouBias(const std::vector<double>& newbias) {
+        bias = newbias;
+    }
+    void modify_ouWeights(const std::vector<std::vector<double>>& newweights) {
+        weights = newweights;
     }
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -71,6 +87,13 @@ public:
 
     std::vector<double> getOutput() {
     }
+    //modify
+    void modify_hiLayers(const std::vector<HiddenLayer>& newhiLayers) {
+        hiLayers = newhiLayers;
+    }
+    void modify_ouLayer(const OutputLayer& newouLayer) {
+        ouLayer = newouLayer;
+    }
 };
 /////////////////////////////////////////////////////////////////////////////
 class Menu {
@@ -82,6 +105,49 @@ public:
     }
 
     void loadWAB(const std::string& fileName) {
+        std::vector<HiddenLayer> hold_hiLayers;
+        OutputLayer hold_ouLayer;
+        HiddenLayer hold_hiLayer;
+        std::vector<double> hold_bias;
+        std::vector<double> hold_nuronWeights;
+        std::vector<std::vector<double>> hold_weights;
+        std::ifstream file(fileName);
+        std::string line;
+        std::string value;
+        bool isH = false;
+            if (file.is_open()) {
+                while (std::getline(file, line)) {
+                    if (line == "W") {
+                        if (isH) {
+                            hold_hiLayer.modify_hiBias(hold_bias);
+                            hold_hiLayer.modify_hiWeights(hold_weights);
+                            hold_hiLayers.push_back(hold_hiLayer);
+                        }
+                        else {
+                            hold_ouLayer.modify_ouBias(hold_bias);
+                            hold_ouLayer.modify_ouWeights(hold_weights);
+                        }
+                        isH = 1;
+                        hold_bias.clear();
+                        hold_weights.clear();
+                        continue;
+                    }
+                    std::stringstream ss(line);
+                    hold_nuronWeights.clear();
+                    std::getline(ss, value, ',');
+                    hold_bias.push_back(std::stod(value));
+                    while (std::getline(ss, value, ',')) {
+                        hold_nuronWeights.push_back(std::stod(value));
+                    }
+                    hold_weights.push_back(hold_nuronWeights);
+                }
+                file.close();
+                network.modify_hiLayers(hold_hiLayers);
+                network.modify_ouLayer(hold_ouLayer);
+            }
+            else {
+                std::cout << "Error: Faild to open a file." << std::endl;
+            }
     }
 
     void train(const std::string& fileName) {
