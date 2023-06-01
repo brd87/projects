@@ -141,7 +141,7 @@ public:
 	void forwardPropagation()
 	{
 		std::vector<double> neuronSet = inLayers.return_Neurons();
-		for (auto layer : hiLayers)
+		for (auto &layer : hiLayers)
 		{
 			layer.calculateActivation(neuronSet);
 			neuronSet = layer.return_Neurons();
