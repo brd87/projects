@@ -160,7 +160,8 @@ public:
 			if (minst[i].label == i) target = 1;
 			for(int n=0; n < lasthiLayer.return_Neurons().size();n++)
 			{
-				gradient += lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n], lasthiLayer.return_Weights()[n],lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
+				gradient += lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n], 
+					lasthiLayer.return_Weights()[n],lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
 			}
 		}
 	}
@@ -201,7 +202,6 @@ class Menu
 {
 private:
 	Network network;
-	//std::vector<MINSTdata> minst;
 public:
 
 	void start()
