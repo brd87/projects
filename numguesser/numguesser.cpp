@@ -153,16 +153,17 @@ public:
 	{
 		HiddenLayer lasthiLayer = hiLayers.back();
 		int target;
-		double gradient = 0;
+		std::vector<double> gradient;
 		for (int i=0; i < ouLayer.return_Neurons().size(); i++)
 		{
-			target = 0;
-			if (minst[i].label == i) target = 1;
+			target = minst[i].label == i ? 1 : 0;
+			double holdgrad=0;
 			for(int n=0; n < lasthiLayer.return_Neurons().size();n++)
 			{
-				gradient += lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n], 
+				holdgrad += lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n], 
 					lasthiLayer.return_Weights()[n],lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
 			}
+			gradient.push_back(holdgrad);
 		}
 	}
 
