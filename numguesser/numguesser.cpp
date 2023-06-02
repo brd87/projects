@@ -11,12 +11,12 @@
 struct MINSTdata
 {
 	int label;
-	std::vector<int> pixels;
+	std::vector<double> pixels;
+	double targetOutput[10] = {0};
 };
 double random(const int& range)
-{ // <--- MOŻE SIĘ ZEPSUĆ
+{
 	std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
-	//std::uniform_real_distribution<double> rozklad(0, range);
 	std::normal_distribution<double> rozklad(0, range);
 	return rozklad(engine);
 }
@@ -35,6 +35,7 @@ public:
 	{
 		return sigmoid(sNeuron) * (1 - sigmoid(sNeuron));
 	}
+
 	void derivedNeurons()
 	{
 		for (auto i : neurons)
@@ -59,14 +60,15 @@ class DeepLayer : public Layer
 private:
 	std::vector<double> bias;
 	std::vector<std::vector<double>> weights;
+	std::vector<double> deltas;
 public:
 	void initializeLayer(const int& frange, const int& srange, const int& currentLayer, const int& prevLayer)
 	{
-		for (int i; i < currentLayer; i++)
+		for (int i = 0; i < currentLayer; i++)
 		{
 			std::vector<double> nweight;
 			bias.push_back((random(2) - 1) * frange);
-			for (int w; w < prevLayer; w++)
+			for (int w = 0; w < prevLayer; w++)
 			{
 				nweight.push_back((random(2) - 1) * srange);
 			}
@@ -78,9 +80,6 @@ public:
 		std::vector<double> outputNeurons;
 		for (int i = 0; i < bias.size(); i++)
 		{
-			//double holdNeuron=0;
-			//for (int w = 0; w < weights[i].size();w++) holdNeuron += weights[i][w] * inputNeurons[i];
-			//outputNeurons.push_back(sigmoid(holdNeuron + bias[i]));
 			outputNeurons.push_back(sigmoid(singleWABprocessing(inputNeurons[i], weights[i], bias[i])));
 		}
 		modify_Neurons(outputNeurons);
@@ -132,7 +131,7 @@ class Network : public DeepLayer
 private:
 	std::vector<MINSTdata> minst;
 	InputLayer inLayer;
-	std::vector<HiddenLayer> hiLayers;
+	HiddenLayer hiLayer;
 	OutputLayer ouLayer;
 	std::vector<Layer> layers;
 	int nHiddenLayers;
@@ -145,60 +144,65 @@ public:
 
 	void initializeWAB(const int& nHiddenNeurons, const int& nOutputNeurons)
 	{
-		layers.push_back(inLayer);
-		for (int i = 0; i < nHiddenLayers; i++)
-			layers.push_back();
-
+		//layers.push_back(inLayer);
+		//for (int i = 0; i < nHiddenLayers; i++)
+		//	layers.push_back();
+		/*
 		for (auto& layer : hiLayers)
 		{
 			layer.initializeLayer(2, 1, nHiddenNeurons, nHiddenNeurons);
 
 		}
+		*/
+		hiLayer.initializeLayer(2, 1, nHiddenNeurons, nHiddenNeurons);
 		ouLayer.initializeLayer(2, 1, nOutputNeurons, nHiddenNeurons);
 	}
 
-	void forwardPropagation()
+	void forwardPropagation(const int& example)
 	{
+		inLayer.modify_Neurons(minst[example].pixels);
 		std::vector<double> neuronSet = inLayer.return_Neurons();
-		for (auto& layer : hiLayers)
-		{
-			layer.calculateActivation(neuronSet);
-			neuronSet = layer.return_Neurons();
-		}
+		hiLayer.calculateActivation(neuronSet);
+		neuronSet = hiLayer.return_Neurons();
 		ouLayer.calculateActivation(neuronSet);
+		std::vector<double> outputNeurons = ouLayer.return_Neurons();
 	}
 
-	void backwardPropagation()
+	void backwardPropagation(const int& example)
 	{
-		HiddenLayer lasthiLayer = hiLayers.back();
+		/*
+		//HiddenLayer lasthiLayer = hiLayers.back();
+		std::vector<double> hiLayerNeurons = hiLayer.return_Neurons();
 		int target;
-		//std::vector<double> gradient;
 
-		double** secgradient = new double* [ouLayer.return_Neurons().size()];
+		double** gradient = new double* [ouLayer.return_Neurons().size()];
 		for (int i = 0; i < ouLayer.return_Neurons().size(); i++)
 		{
-			secgradient[i] = new double[lasthiLayer.return_Neurons().size()+1];
+			//secgradient[i] = new double[lasthiLayer.return_Neurons().size()+1];
+			gradient[i] = new double[hiLayerNeurons.size() + 1];
 			target = minst[i].label == i ? 1 : 0;
-			for(int n=0; n < lasthiLayer.return_Neurons().size();n++)
+			//for(int n=0; n < lasthiLayer.return_Neurons().size();n++)
+			for (int n = 0; n < hiLayerNeurons.size(); n++)
 			{
-				//gradient.push_back(lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n],
-				//	lasthiLayer.return_Weights()[n],lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target));
-				secgradient[i][n] = lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n],
-					ouLayer.return_Weights()[n], lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
+				//secgradient[i][n] = lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n],
+				//    ouLayer.return_Weights()[n], lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
+				gradient[i][n] = hiLayerNeurons[n] * sigmoidDerivative(singleWABprocessing(hiLayerNeurons[n],
+						ouLayer.return_Weights()[n], hiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
 			}
-			secgradient[i][lasthiLayer.return_Neurons().size()] = sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[i],
-				lasthiLayer.return_Weights()[i], lasthiLayer.return_Bias()[i])) * 2 * (ouLayer.return_Neurons()[i] - target);
+			//gradient[i][lasthiLayer.return_Neurons().size()] = sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[i],
+			//    lasthiLayer.return_Weights()[i], lasthiLayer.return_Bias()[i])) * 2 * (ouLayer.return_Neurons()[i] - target);
+			gradient[i][hiLayerNeurons.size()] = sigmoidDerivative(singleWABprocessing(hiLayerNeurons[i],
+					hiLayer.return_Weights()[i], hiLayer.return_Bias()[i])) * 2 * (ouLayer.return_Neurons()[i] - target);
 		}
 
-		double** secgradient = new double* [ouLayer.return_Neurons().size()];
-		for (int i = 0; i < ouLayer.return_Neurons().size(); i++)
-		{
-			secgradient[i] = new double[lasthiLayer.return_Neurons().size() + 1];
-			target = minst[i].label == i ? 1 : 0;
+		const std::vector<double>& outputNeurons = ouLayer.return_Neurons();
+		const std::vector<std::vector<double>>& outputWeights = ouLayer.return_Weights();
+		const std::vector<double>& hiddenNeurons = hiLayer.return_Neurons();
+		const std::vector<std::vector<double>>& hiddenWeights = hiLayer.return_Weights();
+		*/
+		double* target = minst[example].targetOutput;
 
-		}
 	}
-
 	void updateWAB()
 	{
 
@@ -209,10 +213,17 @@ public:
 
 	}
 	//modify&return
+	/*
 	void modify_hiLayers(const std::vector<HiddenLayer>& newhiLayers)
 	{
 		hiLayers.clear();
 		hiLayers = newhiLayers;
+	}
+	*/
+	void modify_hiLayer(const HiddenLayer& newhiLayer)
+	{
+		delete& hiLayer;
+		hiLayer = newhiLayer;
 	}
 	void modify_ouLayer(const OutputLayer& newouLayer)
 	{
@@ -224,13 +235,23 @@ public:
 		minst.clear();
 		minst = newminst;
 	}
+	/*
 	std::vector<HiddenLayer> return_hiLayers()
 	{
 		return hiLayers;
 	}
+	*/
+	HiddenLayer return_hiLayer()
+	{
+		return hiLayer;
+	}
 	OutputLayer return_ouLayer()
 	{
 		return ouLayer;
+	}
+	std::vector<MINSTdata> return_minst()
+	{
+		return minst;
 	}
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -247,7 +268,7 @@ public:
 
 	void loadWAB(const std::string& fileName)
 	{
-		std::vector<HiddenLayer> hold_hiLayers;
+		//std::vector<HiddenLayer> hold_hiLayers;
 		OutputLayer hold_ouLayer;
 		HiddenLayer hold_hiLayer;
 		std::vector<double> hold_bias;
@@ -267,7 +288,7 @@ public:
 					{
 						hold_hiLayer.modify_Bias(hold_bias);
 						hold_hiLayer.modify_Weights(hold_weights);
-						hold_hiLayers.push_back(hold_hiLayer);
+						//hold_hiLayers.push_back(hold_hiLayer);
 					}
 					else
 					{
@@ -290,7 +311,8 @@ public:
 				hold_weights.push_back(hold_nuronWeights);
 			}
 			file.close();
-			network.modify_hiLayers(hold_hiLayers);
+			//network.modify_hiLayers(hold_hiLayers);
+			network.modify_hiLayer(hold_hiLayer);
 			network.modify_ouLayer(hold_ouLayer);
 		}
 		else
@@ -299,7 +321,7 @@ public:
 		}
 	}
 
-	void train(const std::string& fileName)
+	void train(const std::string& fileName, const int& nHiLayerNeurons)
 	{
 		std::vector<MINSTdata> minst;
 		std::ifstream file(fileName);
@@ -314,6 +336,7 @@ public:
 				std::stringstream ss(line);
 				std::getline(ss, value, ',');
 				item.label = std::stoi(value);
+				item.targetOutput[item.label] = 1;
 				while (std::getline(ss, value, ','))
 				{
 					item.pixels.push_back(std::stoi(value));
@@ -322,6 +345,12 @@ public:
 			}
 			network.modify_minst(minst);
 			file.close();
+			network.initializeWAB(nHiLayerNeurons, 10);
+			for (int i=0;i< network.return_minst().size();i++)
+			{
+				network.forwardPropagation(i);
+				network.backwardPropagation(i);
+			}
 		}
 		else
 		{
@@ -344,6 +373,16 @@ public:
 				for (auto n : weights[i]) file << n << ",";
 				file << "\n";
 			}
+			file << "W\n";
+			weights = network.return_hiLayer().return_Weights();
+			bias = network.return_hiLayer().return_Bias();
+			for (int i = 0; i < bias.size(); i++)
+			{
+				file << bias[i] << ",";
+				for (auto n : weights[i]) file << n << ",";
+				file << "\n";
+			}
+			/*
 			for (auto& leyer : network.return_hiLayers())
 			{
 				weights = leyer.return_Weights();
@@ -356,6 +395,8 @@ public:
 					file << "\n";
 				}
 			}
+			*/
+
 			file.close();
 		}
 		else {
@@ -364,14 +405,13 @@ public:
 	}
 
 	void feed(const std::string& fileName) {
-		std::vector<MINSTdata> minst;
+		MINSTdata item;
 		std::ifstream file(fileName);
 		std::string line;
 		std::string value;
 		if (file.is_open())
 		{
 			std::getline(file, line);
-			MINSTdata item;
 			std::stringstream ss(line);
 			std::getline(ss, value, ',');
 			item.label = std::stoi(value);
@@ -379,7 +419,6 @@ public:
 			{
 				item.pixels.push_back(std::stoi(value));
 			}
-			minst.push_back(item);
 			file.close();
 		}
 		else
@@ -393,7 +432,7 @@ int main()
 {
 	std::cout << "NETWORK";
 	Menu Test;
-	Test.train("mnist_train.csv");
-	std::cout << "AAAAA";
+	Test.train("mnist_train.csv", 1000);
+	std::cout << "File loaded";
 	return 0;
 }
