@@ -25,7 +25,7 @@ class Layer
 {
 private:
 	std::vector<double> neurons;
-	std::vector<double> derivedNeurons;
+	//std::vector<double> derivedNeurons;
 public:
 	double sigmoid(const double& sNeuron)
 	{
@@ -35,14 +35,16 @@ public:
 	{
 		return sigmoid(sNeuron) * (1 - sigmoid(sNeuron));
 	}
-
-	void derivedNeurons()
+	/*
+	void derNeurons()
 	{
 		for (auto i : neurons)
 		{
 			derivedNeurons.push_back(sigmoidDerivative(i));
 		}
 	}
+	*/
+	
 	////modify&return
 	void modify_Neurons(const std::vector<double>& newneurons)
 	{
@@ -60,7 +62,6 @@ class DeepLayer : public Layer
 private:
 	std::vector<double> bias;
 	std::vector<std::vector<double>> weights;
-	std::vector<double> deltas;
 public:
 	void initializeLayer(const int& frange, const int& srange, const int& currentLayer, const int& prevLayer)
 	{
@@ -74,20 +75,20 @@ public:
 			}
 			weights.push_back(nweight);
 		}
-		}
+	}
 	void calculateActivation(const std::vector<double>& inputNeurons)
 	{
 		std::vector<double> outputNeurons;
 		for (int i = 0; i < bias.size(); i++)
 		{
-			outputNeurons.push_back(sigmoid(singleWABprocessing(inputNeurons[i], weights[i], bias[i])));
+			outputNeurons.push_back(sigmoid(singleWABprocessing(inputNeurons, weights[i], bias[i])));
 		}
 		modify_Neurons(outputNeurons);
 	}
-	double singleWABprocessing(const double& inputNeuron, const std::vector<double>& inputWeights, const double& inputbias)
+	double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputbias)
 	{
 		double holdNeuron = 0;
-		for (int i = 0; i < inputWeights.size(); i++) holdNeuron += inputWeights[i] * inputNeuron;
+		for (int i = 0; i < inputWeights.size(); i++) holdNeuron += inputWeights[i] * inputNeurons[i];
 		return holdNeuron + inputbias;
 	}
 	////modify&return
@@ -134,7 +135,7 @@ private:
 	HiddenLayer hiLayer;
 	OutputLayer ouLayer;
 	std::vector<Layer> layers;
-	int nHiddenLayers;
+	//int nHiddenLayers;
 public:
 	//int nInput;
 	//int nOutput;
@@ -166,51 +167,36 @@ public:
 		neuronSet = hiLayer.return_Neurons();
 		ouLayer.calculateActivation(neuronSet);
 		std::vector<double> outputNeurons = ouLayer.return_Neurons();
+		getOutput(outputNeurons);
 	}
 
 	void backwardPropagation(const int& example)
 	{
-		/*
-		//HiddenLayer lasthiLayer = hiLayers.back();
-		std::vector<double> hiLayerNeurons = hiLayer.return_Neurons();
-		int target;
-
-		double** gradient = new double* [ouLayer.return_Neurons().size()];
-		for (int i = 0; i < ouLayer.return_Neurons().size(); i++)
-		{
-			//secgradient[i] = new double[lasthiLayer.return_Neurons().size()+1];
-			gradient[i] = new double[hiLayerNeurons.size() + 1];
-			target = minst[i].label == i ? 1 : 0;
-			//for(int n=0; n < lasthiLayer.return_Neurons().size();n++)
-			for (int n = 0; n < hiLayerNeurons.size(); n++)
-			{
-				//secgradient[i][n] = lasthiLayer.return_Neurons()[n] * sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[n],
-				//    ouLayer.return_Weights()[n], lasthiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
-				gradient[i][n] = hiLayerNeurons[n] * sigmoidDerivative(singleWABprocessing(hiLayerNeurons[n],
-						ouLayer.return_Weights()[n], hiLayer.return_Bias()[n])) * 2 * (ouLayer.return_Neurons()[i] - target);
-			}
-			//gradient[i][lasthiLayer.return_Neurons().size()] = sigmoidDerivative(singleWABprocessing(lasthiLayer.return_Neurons()[i],
-			//    lasthiLayer.return_Weights()[i], lasthiLayer.return_Bias()[i])) * 2 * (ouLayer.return_Neurons()[i] - target);
-			gradient[i][hiLayerNeurons.size()] = sigmoidDerivative(singleWABprocessing(hiLayerNeurons[i],
-					hiLayer.return_Weights()[i], hiLayer.return_Bias()[i])) * 2 * (ouLayer.return_Neurons()[i] - target);
-		}
-
-		const std::vector<double>& outputNeurons = ouLayer.return_Neurons();
-		const std::vector<std::vector<double>>& outputWeights = ouLayer.return_Weights();
-		const std::vector<double>& hiddenNeurons = hiLayer.return_Neurons();
-		const std::vector<std::vector<double>>& hiddenWeights = hiLayer.return_Weights();
-		*/
+		std::vector<double> holdOuNeurons = ouLayer.return_Neurons();
+		std::vector<double> holdHiNeurons = hiLayer.return_Neurons();
+		std::vector<double> holdInNeurons = hiLayer.return_Neurons();
 		double* target = minst[example].targetOutput;
-
+		double** ouGradient = new double* [holdOuNeurons.size()];
+		for (int i = 0; i < holdOuNeurons.size(); i++)
+		{
+			ouGradient[i] = new double[holdHiNeurons.size() + 1];
+			for (int n = 0; n < holdHiNeurons.size(); n++)
+			{
+				ouGradient[i][n] = holdHiNeurons[n] * sigmoidDerivative(singleWABprocessing(holdHiNeurons, ouLayer.return_Weights()[i], ouLayer.return_Bias()[i])) * 2 * (holdOuNeurons[i] - target[i]);
+			}
+			ouGradient[i][holdHiNeurons.size()] = sigmoidDerivative(singleWABprocessing(holdHiNeurons, ouLayer.return_Weights()[i], ouLayer.return_Bias()[i])) * 2 * (holdOuNeurons[i] - target[i]);
+		}
 	}
+
 	void updateWAB()
 	{
 
 	}
 
-	std::vector<double> getOutput()
+	std::vector<double> getOutput(const std::vector<double>& outputNeurons)
 	{
-
+		int number = std::distance(outputNeurons.begin(), std::max_element(outputNeurons.begin(), outputNeurons.end()));
+		std::cout << "Guessed number: " << number << std::endl;
 	}
 	//modify&return
 	/*
