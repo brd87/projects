@@ -65,7 +65,7 @@ public:
 	void backwardPropagation();
 	void updateWAB();
 	void epoch(const int& nEpoch);
-	std::vector<double> getOutput(const std::vector<double>& outputNeurons);
+	void getOutput(const std::vector<double>& outputNeurons);
 	//void modify_hiLayer(const HiddenLayer& newhiLayer);
 	//void modify_ouLayer(const OutputLayer& newouLayer);
 	void modify_hiLayer(const DeepLayer& newhiLayer);
@@ -87,7 +87,7 @@ public:
 
 	void start();
 	void loadWAB(const std::string& fileName);
-	void train(const std::string& fileName, const int& nHiLayerNeurons);
+	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& nEpoch);
 	void saveWAB(const std::string& fileName);
 	void feed(const std::string& fileName);
 };
