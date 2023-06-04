@@ -8,5 +8,6 @@ int main()
 	Menu Test;
 	Test.train("mnist_train.csv", 1000);
 	std::cout << "File loaded";
+	Test.start();
 	return 0;
 }

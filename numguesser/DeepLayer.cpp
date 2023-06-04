@@ -22,6 +22,7 @@ public:
 			weights.push_back(newWeight);
 		}
 	}
+	/*
 	void calculateActivation(const std::vector<double>& inputNeurons)
 	{
 		std::vector<double> outputNeurons;
@@ -31,6 +32,17 @@ public:
 		}
 		modify_Neurons(outputNeurons);
 	}
+	*/
+	void calculateActivation(const std::vector<double>& inputNeurons)
+	{
+		std::vector<double> outputNeurons;
+		for (int i = 0; i < bias.size(); i++)
+		{
+			outputNeurons.push_back(sigmoid(singleWABprocessing(inputNeurons, weights[i], bias[i])));
+		}
+		add_Neurons(outputNeurons);
+	}
+
 	double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputbias)
 	{
 		double holdNeuron = 0;

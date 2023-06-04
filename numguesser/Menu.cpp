@@ -75,7 +75,7 @@ public:
 		}
 	}
 
-	void train(const std::string& fileName, const int& nHiLayerNeurons)
+	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& nEpoch)
 	{
 		std::vector<MINSTdata> minst;
 		std::ifstream file(fileName);
@@ -99,12 +99,19 @@ public:
 			}
 			network.modify_minst(minst);
 			file.close();
+
+			//temporary placement
 			network.initializeWAB(nHiLayerNeurons, 10);
+			network.forwardPropagation();
+			network.epoch(nEpoch);
+			/*
 			for (int i = 0; i < network.return_minst().size(); i++)
 			{
 				network.forwardPropagation(i);
 				network.backwardPropagation(i);
 			}
+			*/
+			
 		}
 		else
 		{
@@ -174,6 +181,7 @@ public:
 				item.pixels.push_back(std::stoi(value));
 			}
 			file.close();
+			network.forwardPropagation();
 		}
 		else
 		{
