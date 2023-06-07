@@ -17,8 +17,8 @@ private:
 	//std::vector<double> neurons;
 	std::vector<std::vector<double>> neurons;
 public:
-    double sigmoid(const double& neuron);
-    double sigmoidDerivative(const double& neuron);
+    //double sigmoid(const double& neuron);
+    //double sigmoidDerivative(const double& neuron);
 
 	////modify&return
 	//void modify_Neurons(const std::vector<double>& newNeurons);
@@ -38,15 +38,26 @@ private:
 
 public:
     void initializeLayer(const int& biasRange, const int& weightsRange, const int& currentLayer, const int& prevLayer);
-    void calculateActivation(const std::vector<double>& inputNeurons);
-    double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputBias);
+    //void calculateActivation(const std::vector<double>& inputNeurons);
+    //double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputBias);
     void modify_Bias(const std::vector<double>& newBias);
     void modify_Weights(const std::vector<std::vector<double>>& newWeights);
     std::vector<std::vector<double>> return_Weights();
     std::vector<double> return_Bias();
 };
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-class Network : public DeepLayer
+class Processing
+{
+private:
+	std::vector<std::vector<double>> gradient;
+public:
+	std::vector<double> calculateActivation(const std::vector<double>& inputNeurons, const std::vector<std::vector<double>>& weights, const std::vector<double>& bias);
+	double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputbias);
+	double sigmoid(const double& neuron);
+	double sigmoidDerivative(const double& neuron);
+};
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+class Network : public DeepLayer, public Processing
 {
 private:
 	std::vector<MINSTdata> minst;
@@ -63,7 +74,7 @@ public:
 	//void backwardPropagation(const int& example);
 	void forwardPropagation();
 	void backwardPropagation();
-	void updateWAB();
+	void updateWAB(const double**& ouWABGradient, const double**& ouXGradient, const double**& hiWABGradient, const double**& hiXGradient);
 	void epoch(const int& nEpoch);
 	void getOutput(const std::vector<double>& outputNeurons);
 	//void modify_hiLayer(const HiddenLayer& newhiLayer);
@@ -71,6 +82,7 @@ public:
 	void modify_hiLayer(const DeepLayer& newhiLayer);
 	void modify_ouLayer(const DeepLayer& newouLayer);
 	void modify_minst(const std::vector<MINSTdata>& newminst);
+	void add_minst(const MINSTdata& item);
 	//HiddenLayer return_hiLayer();
 	//OutputLayer return_ouLayer();
 	DeepLayer return_hiLayer();
@@ -87,7 +99,7 @@ public:
 
 	void start();
 	void loadWAB(const std::string& fileName);
-	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& nEpoch);
+	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize);
 	void saveWAB(const std::string& fileName);
 	void feed(const std::string& fileName);
 };

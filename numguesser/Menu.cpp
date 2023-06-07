@@ -69,16 +69,19 @@ void Menu::loadWAB(const std::string& fileName)
 	}
 }
 
-void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& nEpoch)
+void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize)
 {
-	std::vector<MINSTdata> minst;
+	int x = 0; //temp
+	int fullstop = 4; //temp
+	//std::vector<MINSTdata> minst;
 	std::ifstream file(fileName);
 	std::string line;
 	std::string value;
 	if (file.is_open())
 	{
+		std::cout << ">> t start_read" << std::endl;//temp<<<<<<
 		std::getline(file, line);
-		while (std::getline(file, line))
+		while (std::getline(file, line) && x<fullstop)
 		{
 			MINSTdata item;
 			std::stringstream ss(line);
@@ -87,17 +90,24 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 			item.targetOutput[item.label] = 1;
 			while (std::getline(ss, value, ','))
 			{
+				
 				item.pixels.push_back(std::stoi(value));
 			}
-			minst.push_back(item);
+			network.add_minst(item);
+			std::cout << "> t added" << std::endl;//temp<<<<<<
+			x++;
+			//minst.push_back(item);
 		}
-		network.modify_minst(minst);
+		//network.modify_minst(minst);
 		file.close();
-
+		std::cout << ">> t end_read" << std::endl;//temp<<<<<<
 		//temporary placement
 		network.initializeWAB(nHiLayerNeurons, 10);
+		std::cout << ">> t initialization_done" << std::endl;//temp<<<<<<
 		network.forwardPropagation();
-		network.epoch(nEpoch);
+		std::cout << ">> t forProp_done" << std::endl;//temp<<<<<<
+		network.epoch(epochSize);
+		std::cout << ">> t backProp_done" << std::endl;//temp<<<<<<
 		/*
 		for (int i = 0; i < network.return_minst().size(); i++)
 		{

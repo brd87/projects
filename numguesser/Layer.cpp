@@ -2,7 +2,7 @@
 
 #include "classes.h"
 
-
+/*
 double Layer::sigmoid(const double& neuron)
 {
 	return 1 / (1 + exp(neuron));
@@ -11,6 +11,8 @@ double Layer::sigmoidDerivative(const double& neuron)
 {
 	return sigmoid(neuron) * (1 - sigmoid(neuron));
 }
+*/
+
 /*
 void Layer::derNeurons()
 {
