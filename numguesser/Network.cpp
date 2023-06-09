@@ -163,7 +163,7 @@ void Network::backwardPropagation()
 	std::cout << ">> BackP done" << std::endl; //temp<<<<<<
 }
 
-void Network::updateWAB(const double**& ouWABGradient, const double**& ouXGradient, const double**& hiWABGradient, const double**& hiXGradient)
+void Network::updateWAB(double** ouWABGradient, double** ouXGradient, double** hiWABGradient, double** hiXGradient)
 {
 	std::cout << ">> upWAB start" << std::endl; //temp<<<<<<
 	int sizeOuNeurons = ouLayer.return_allNeurons()[0].size();
@@ -186,22 +186,19 @@ void Network::updateWAB(const double**& ouWABGradient, const double**& ouXGradie
 		}
 		holdHiBias[i] += hiWABGradient[i][sizeInNeurons]/minst.size();
 	}
+	ouLayer.modify_Weights(holdOuWeights);
+	ouLayer.modify_Bias(holdOuBias);
+	hiLayer.modify_Weights(holdHiWeights);
+	hiLayer.modify_Bias(holdHiBias);
 	std::cout << ">> upWAB done" << std::endl; //temp<<<<<<
 }
 
-void Network::epoch(const int& nEpoch)
+void Network::epoch()
 {
-	std::cout << ">> EPOCH start" << std::endl; //temp<<<<<<
-	for (int i = 0; i < nEpoch; i++)
-	{
-		std::cout << ">> EPOCH " << i << std::endl; //temp<<<<<<
-		backwardPropagation();
-	}
 	kill_minst();
 	inLayer.kill_neurons();
 	hiLayer.kill_neurons();
 	ouLayer.kill_neurons();
-	std::cout << ">> EPOCH done" << std::endl; //temp<<<<<<
 }
 
 void Network::getOutput(const std::vector<double>& outputNeurons)

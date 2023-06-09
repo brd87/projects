@@ -9,7 +9,39 @@
 
 void Menu::start()
 {
+	std::string input;
+	while (true)
+	{
+		std::cout << "Enter command: ";
+		std::getline(std::cin, input);
+		std::stringstream ss(input);
+		std::vector<std::string> tokens;
+		std::string token;
+		while (ss >> token) tokens.push_back(token);
+		if (tokens.empty()) continue;
 
+		if (tokens[0] == "set") 
+		{
+			if (tokens.size() == 2) loadWAB(tokens[1]);
+			else std::cout << "Invalid number of parameters for 'set' command." << std::endl;
+		}
+		else if (tokens[0] == "train") 
+		{
+			if (tokens.size() == 5) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]));
+			else std::cout << "Invalid number of parameters for 'train' command." << std::endl;
+		}
+		else if (tokens[0] == "save") 
+		{
+			if (tokens.size() == 2) saveWAB(tokens[1]);
+			else std::cout << "Invalid number of parameters for 'save' command." << std::endl;
+		}
+		else if (tokens[0] == "feed") 
+		{
+			if (tokens.size() == 3) feed(tokens[1], token[2]);
+			else std::cout << "Invalid number of parameters for 'feed' command." << std::endl;
+		}
+		else std::cout << "Invalid command." << std::endl;
+	}
 }
 
 void Menu::loadWAB(const std::string& fileName)
@@ -71,55 +103,51 @@ void Menu::loadWAB(const std::string& fileName)
 
 void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize)
 {
-	int x = 0; //temp
-	int fullstop = 4; //temp
-	//std::vector<MINSTdata> minst;
 	std::ifstream file(fileName);
 	std::string line;
 	std::string value;
-	if (file.is_open())
+	int counter=0;
+	for (int i = 0; i < epochSize; i++)
 	{
-		std::cout << ">> t start_read" << std::endl;//temp<<<<<<
-		std::getline(file, line);
-		while (std::getline(file, line) && x<fullstop)
+		if (file.is_open())
 		{
-			MINSTdata item;
-			std::stringstream ss(line);
-			std::getline(ss, value, ',');
-			item.label = std::stoi(value);
-			item.targetOutput[item.label] = 1;
-			while (std::getline(ss, value, ','))
+			std::cout << ">> epoch no." << i << " START" << std::endl;//temp<<<<<<
+			std::getline(file, line);
+			while (std::getline(file, line))
 			{
-				
-				item.pixels.push_back(std::stoi(value));
+				MINSTdata item;
+				std::stringstream ss(line);
+				std::getline(ss, value, ',');
+				item.label = std::stoi(value);
+				item.targetOutput[item.label] = 1;
+				while (std::getline(ss, value, ','))
+				{
+					item.pixels.push_back(std::stoi(value));
+				}
+				network.add_minst(item);
+				//std::cout << "> example added" << std::endl;//temp<<<<<<
+				if (counter == batchSize)
+				{
+					network.initializeWAB(nHiLayerNeurons, 10);
+					std::cout << ">> initialization_done" << std::endl;//temp<<<<<<
+					network.forwardPropagation();
+					std::cout << ">> forProp_done" << std::endl;//temp<<<<<<
+					network.backwardPropagation();
+					std::cout << ">> backProp_done" << std::endl;//temp<<<<<<
+					network.kill_minst();
+					counter = 0;
+				}
+				counter++;
 			}
-			network.add_minst(item);
-			std::cout << "> t added" << std::endl;//temp<<<<<<
-			x++;
-			//minst.push_back(item);
+			network.epoch();
+			file.close();
+			std::cout << ">> epoch DONE" << std::endl;//temp<<<<<<
 		}
-		//network.modify_minst(minst);
-		file.close();
-		std::cout << ">> t end_read" << std::endl;//temp<<<<<<
-		//temporary placement
-		network.initializeWAB(nHiLayerNeurons, 10);
-		std::cout << ">> t initialization_done" << std::endl;//temp<<<<<<
-		network.forwardPropagation();
-		std::cout << ">> t forProp_done" << std::endl;//temp<<<<<<
-		network.epoch(epochSize);
-		std::cout << ">> t backProp_done" << std::endl;//temp<<<<<<
-		/*
-		for (int i = 0; i < network.return_minst().size(); i++)
+		else
 		{
-			network.forwardPropagation(i);
-			network.backwardPropagation(i);
+			std::cout << "Error: Faild to open a file." << std::endl;
+			break;
 		}
-		*/
-			
-	}
-	else
-	{
-		std::cout << "Error: Faild to open a file." << std::endl;
 	}
 }
 
@@ -164,31 +192,38 @@ void Menu::saveWAB(const std::string& fileName)
 
 		file.close();
 	}
-	else {
-		std::cout << "Error: Failed to open a file." << std::endl;
-	}
+	else std::cout << "Error: Failed to open a file." << std::endl;
 }
 
-void Menu::feed(const std::string& fileName) {
-	MINSTdata item;
+void Menu::feed(const std::string& fileName, const int& task)
+{
 	std::ifstream file(fileName);
 	std::string line;
 	std::string value;
 	if (file.is_open())
 	{
+		int currentLine = 0;
 		std::getline(file, line);
-		std::stringstream ss(line);
-		std::getline(ss, value, ',');
-		item.label = std::stoi(value);
-		while (std::getline(ss, value, ','))
+		while (std::getline(file, line))
 		{
-			item.pixels.push_back(std::stoi(value));
+			if (currentLine == task)
+			{
+				MINSTdata item;
+				std::stringstream ss(line);
+				std::getline(ss, value, ',');
+				item.label = std::stoi(value);
+				item.targetOutput[item.label] = 1;
+				while (std::getline(ss, value, ','))
+				{
+					item.pixels.push_back(std::stoi(value));
+				}
+				network.add_minst(item);
+				break;
+			}
+			currentLine++;
 		}
-		file.close();
 		network.forwardPropagation();
+		network.kill_minst();
 	}
-	else
-	{
-		std::cout << "Error: Faild to open a file." << std::endl;
-	}
+	else std::cout << "Error: Faild to open a file." << std::endl;
 }
