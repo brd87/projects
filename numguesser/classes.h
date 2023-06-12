@@ -44,7 +44,37 @@ public:
     void modify_Weights(const std::vector<std::vector<double>>& newWeights);
     std::vector<std::vector<double>> return_Weights();
     std::vector<double> return_Bias();
+
 };
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+/*
+class HiddenLayer : public DeepLayer, public Processing
+{
+private:
+	double neurons[100][1000];
+	double bias[1000];
+	double weights[1000][784];
+public:
+	double backProp_Weight(const double& element, const int& index1, const int& index2);
+	double backProp_Bias(const int& index1, const int& index2);
+	double backProp_Input(const double& element, const int& index1, const int& index2);
+};
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+class OutputLayer : public Processing
+{
+private:
+	double neurons[100][1000];
+	double bias[1000];
+	double weights[1000][784];
+public:
+	void calculateActivation(const double* inputNeurons, const int& index);
+	double element(const int& index1, const int& index2);
+	double backProp_Weight(const double& element, const int& index1, const int& index2);
+	double backProp_Bias(const double& element);
+	double backProp_Input(const double& element, const int& index1, const int& index2);
+};
+*/
+
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 class Processing
 {
@@ -53,6 +83,7 @@ private:
 public:
 	std::vector<double> calculateActivation(const std::vector<double>& inputNeurons, const std::vector<std::vector<double>>& weights, const std::vector<double>& bias);
 	double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputbias);
+	//double singleWABprocessing2(const double* inputNeurons, const double* inputWeights, const double& inputbias, const int& size);
 	double sigmoid(const double& neuron);
 	double sigmoidDerivative(const double& neuron);
 };
@@ -100,7 +131,7 @@ public:
 
 	void start();
 	void loadWAB(const std::string& fileName);
-	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize);
+	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const bool& initialize);
 	void saveWAB(const std::string& fileName);
 	void feed(const std::string& fileName, const int& task);
 };

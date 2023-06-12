@@ -27,7 +27,7 @@ void Menu::start()
 		}
 		else if (tokens[0] == "train") 
 		{
-			if (tokens.size() == 5) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]));
+			if (tokens.size() == 5) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stoi(tokens[5]));
 			else std::cout << "Invalid number of parameters for 'train' command." << std::endl;
 		}
 		else if (tokens[0] == "save") 
@@ -101,12 +101,13 @@ void Menu::loadWAB(const std::string& fileName)
 	}
 }
 
-void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize)
+void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const bool& initialize)
 {
 	std::ifstream file(fileName);
 	std::string line;
 	std::string value;
 	int counter=0;
+	if(initialize==false) network.initializeWAB(nHiLayerNeurons, 10);
 	for (int i = 0; i < epochSize; i++)
 	{
 		if (file.is_open())
@@ -128,7 +129,7 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 				//std::cout << "> example added" << std::endl;//temp<<<<<<
 				if (counter == batchSize)
 				{
-					network.initializeWAB(nHiLayerNeurons, 10);
+					//network.initializeWAB(nHiLayerNeurons, 10);
 					std::cout << ">> initialization_done" << std::endl;//temp<<<<<<
 					network.forwardPropagation();
 					std::cout << ">> forProp_done" << std::endl;//temp<<<<<<
@@ -175,20 +176,6 @@ void Menu::saveWAB(const std::string& fileName)
 			for (auto n : weights[i]) file << n << ",";
 			file << "\n";
 		}
-		/*
-		for (auto& leyer : network.return_hiLayers())
-		{
-			weights = leyer.return_Weights();
-			bias = leyer.return_Bias();
-			file << "W\n";
-			for (int i = 0; i < bias.size(); i++)
-			{
-				file << bias[i] << ",";
-				for (auto n : weights[i]) file << n << ",";
-				file << "\n";
-			}
-		}
-		*/
 
 		file.close();
 	}
