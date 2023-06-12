@@ -99,20 +99,24 @@ void Network::backwardPropagation()
 		//double** hiWABGradient = new double* [holdHiNeurons[index].size()];
 		//double** hiXGradient = new double* [holdHiNeurons[index].size()];
         double* target = minst[index].targetOutput;
+		double* deltaOuLayer = new double[holdOuNeurons[index].size()];
         for (int i = 0; i < holdOuNeurons[index].size(); i++)
         {
 			//ouWABGradient[i] = new double[holdHiNeurons[index].size() + 1];
 			//ouXGradient[i] = new double[holdHiNeurons[index].size()];
 			//std::cout << ">> BackP bump 1: " << i << std::endl; //temp<<<<<<
 			//std::cout << "> OU : N-" << holdHiNeurons[index].size() << ", WpN-" << ouLayer.return_Weights()[i].size() << std::endl; //temp<<<<<<
-			double dSigAndCost = sigmoidDerivative(holdOuNeurons[index][i]) * 2 * (holdOuNeurons[index][i] - target[i]);
+			
+			//double deltaOu = sigmoidDerivative(holdOuNeurons[index][i]) * 2 * (holdOuNeurons[index][i] - target[i]);
+			//deltaOuLayer[i] = deltaOu;
+			deltaOuLayer[i] = sigmoidDerivative(holdOuNeurons[index][i]) * 2 * (holdOuNeurons[index][i] - target[i]);
 			//std::cout << ">> BackP bump 2: " << i << std::endl; //temp<<<<<<
             for (int n = 0; n < holdHiNeurons[index].size(); n++)
             {
-				ouWABGradient[i][n] += holdHiNeurons[index][n] * dSigAndCost; //backprop into weight
-				ouXGradient[i][n] += holdOuWeights[i][n] * dSigAndCost; //backprop into input
+				ouWABGradient[i][n] += holdHiNeurons[index][n] * deltaOuLayer[i]; //backprop into weight
+				ouXGradient[i][n] += holdOuWeights[i][n] * deltaOuLayer[i]; //backprop into input
             }
-			ouWABGradient[i][holdHiNeurons[index].size()] += dSigAndCost; //backprop into bias
+			ouWABGradient[i][holdHiNeurons[index].size()] += deltaOuLayer[i]; //backprop into bias
 			//std::cout << ">> BackP bump 3: " << i << std::endl; //temp<<<<<<
 
         }
@@ -123,18 +127,23 @@ void Network::backwardPropagation()
 			//hiXGradient[i] = new double[holdInNeurons[index].size()];
 			//std::cout << ">> BackP bump 1: " << i << std::endl; //temp<<<<<<
 			//std::cout << "> HI : N-" << holdInNeurons[index].size() << ", WpN-" << hiLayer.return_Weights()[i].size() << std::endl; //temp<<<<<<
-			double dSigAndSum = sigmoidDerivative(holdHiNeurons[index][i]);//*Sum(wjk * dSigSingleWAB_k)
-
+			double sumDeltaTimesWeight = 0.0;
+			for (int n = 0; n < holdOuNeurons[index].size(); n++)
+			{
+				sumDeltaTimesWeight += holdOuWeights[n][i] * deltaOuLayer[n];
+			}
+			double deltaHiLayer = sumDeltaTimesWeight * sigmoidDerivative(holdHiNeurons[index][i]);
 			//std::cout << ">> BackP bump 2: " << i << std::endl; //temp<<<<<<
 
 			for (int n = 0; n < holdInNeurons[index].size(); n++)
 			{
-				hiWABGradient[i][n] += holdInNeurons[index][n] * dSigAndSum; // backprop into weight  dSigAndSum;//
-				hiXGradient[i][n] += holdHiWeights[i][n] * dSigAndSum; // backprop input   dSigAndSum;//
+				hiWABGradient[i][n] += holdInNeurons[index][n] * deltaHiLayer; // backprop into weight
+				hiXGradient[i][n] += holdHiWeights[i][n] * deltaHiLayer; // backprop into input
 			}
-			hiWABGradient[i][holdInNeurons[index].size()] += dSigAndSum; // backprop into bias
+			hiWABGradient[i][holdInNeurons[index].size()] += deltaHiLayer; // backprop into bias
 			//std::cout << ">> BackP bump 3: " << i << std::endl; //temp<<<<<<
 		}
+		delete[] deltaOuLayer;
 		//std::cout << ">> BackP hiPushed" << std::endl; //temp<<<<<<
 		/*
 		for (int i = 0; i < holdOuNeurons[index].size(); i++)
