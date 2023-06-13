@@ -27,7 +27,7 @@ void Menu::start()
 		}
 		else if (tokens[0] == "train") 
 		{
-			if (tokens.size() == 7) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stoi(tokens[5]), std::stoi(tokens[6]));
+			if (tokens.size() == 8) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stod(tokens[5]), std::stoi(tokens[6]), std::stoi(tokens[7]));
 			else std::cout << "Invalid number of parameters for 'train' command." << std::endl;
 		}
 		else if (tokens[0] == "save") 
@@ -37,7 +37,7 @@ void Menu::start()
 		}
 		else if (tokens[0] == "feed") 
 		{
-			if (tokens.size() == 3) feed(tokens[1], token[2]);
+			if (tokens.size() == 3) feed(tokens[1], std::stoi(tokens[2]));
 			else std::cout << "Invalid number of parameters for 'feed' command." << std::endl;
 		}
 		else std::cout << "Invalid command." << std::endl;
@@ -46,6 +46,7 @@ void Menu::start()
 
 void Menu::loadWAB(const std::string& fileName)
 {
+	std::cout << "loadWAB start" << std::endl;//temp<<<<<<
 	//std::vector<HiddenLayer> hold_hiLayers;
 	//OutputLayer hold_ouLayer;
 	//HiddenLayer hold_hiLayer;
@@ -58,10 +59,12 @@ void Menu::loadWAB(const std::string& fileName)
 	std::string line;
 	std::string value;
 	bool isH = false;
+	std::cout << "try file" << std::endl;//temp<<<<<<
 	if (file.is_open())
 	{
 		while (std::getline(file, line))
 		{
+			std::cout << "go for hidden" << std::endl;//temp<<<<<<
 			if (line == "W")
 			{
 				if (isH)
@@ -99,9 +102,10 @@ void Menu::loadWAB(const std::string& fileName)
 	{
 		std::cout << "Error: Faild to open a file." << std::endl;
 	}
+	std::cout << "loadWAB done" << std::endl;//temp<<<<<<
 }
 
-void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize)
+void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize, const int& batchRange)
 {
 	std::ifstream file(fileName);
 	std::string line;
@@ -110,6 +114,7 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 	if(initialize==false) network.initializeWAB(nHiLayerNeurons, 10);
 	for (int i = 0; i < epochSize; i++)
 	{
+		int range = 0;
 		if (file.is_open())
 		{
 			std::cout << ">> epoch No." << i << " START" << std::endl;//temp<<<<<<
@@ -131,13 +136,17 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 				{
 					//network.initializeWAB(nHiLayerNeurons, 10);
 					//std::cout << ">> initialization_done" << std::endl;//temp<<<<<<
-					network.forwardPropagation();
+					network.forwardPropagation(true);
 					//std::cout << ">> forProp_done" << std::endl;//temp<<<<<<
 					network.backwardPropagation(learningRate);
 					//std::cout << ">> backProp_done" << std::endl;//temp<<<<<<
 					network.kill_minst();
 					counter = 0;
+					if (batchRange >= 0)
+						if (range == batchRange) break;
+						range++;
 				}
+
 				counter++;
 			}
 			network.epoch();
@@ -184,9 +193,11 @@ void Menu::saveWAB(const std::string& fileName)
 
 void Menu::feed(const std::string& fileName, const int& task)
 {
+	//std::cout << "feed start" << std::endl;//temp<<<<<<
 	std::ifstream file(fileName);
 	std::string line;
 	std::string value;
+	
 	if (file.is_open())
 	{
 		int currentLine = 0;
@@ -209,8 +220,22 @@ void Menu::feed(const std::string& fileName, const int& task)
 			}
 			currentLine++;
 		}
-		network.forwardPropagation();
+		std::cout << "Example Image:" << std::endl;
+		for (int row = 0; row < 28; row++)
+		{
+			for (int col = 0; col < 28; col++)
+			{
+				int pixelValue = network.return_minst()[0].pixels[row * 28 + col];
+				if (pixelValue > 170) std::cout << "0";
+				else if (pixelValue > 85) std::cout << "O";
+				else if (pixelValue > 0) std::cout << "o";
+				else std::cout << ".";
+			}
+			std::cout << std::endl;
+		}
+		network.forwardPropagation(false);
 		network.kill_minst();
 	}
 	else std::cout << "Error: Faild to open a file." << std::endl;
+	//std::cout << "feed done" << std::endl;//temp<<<<<<
 }

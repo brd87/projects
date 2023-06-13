@@ -103,7 +103,7 @@ public:
 	void initializeWAB(const int& nHiddenNeurons, const int& nOutputNeurons);
 	//void forwardPropagation(const int& example);
 	//void backwardPropagation(const int& example);
-	void forwardPropagation();
+	void forwardPropagation(const bool& mode);
 	void backwardPropagation(const double& learningRate);
 	//void updateWAB(const double**& ouWABGradient, const double**& ouXGradient, const double**& hiWABGradient, const double**& hiXGradient);
 	void updateWAB(double** ouWABGradient, double** ouXGradient, double** hiWABGradient, double** hiXGradient, const double& learningRate);
@@ -131,7 +131,7 @@ public:
 
 	void start();
 	void loadWAB(const std::string& fileName);
-	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize);
+	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize, const int& batchRange);
 	void saveWAB(const std::string& fileName);
 	void feed(const std::string& fileName, const int& task);
 };
