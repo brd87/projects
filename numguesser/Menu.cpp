@@ -27,7 +27,7 @@ void Menu::start()
 		}
 		else if (tokens[0] == "train") 
 		{
-			if (tokens.size() == 5) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stoi(tokens[5]));
+			if (tokens.size() == 7) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stoi(tokens[5]), std::stoi(tokens[6]));
 			else std::cout << "Invalid number of parameters for 'train' command." << std::endl;
 		}
 		else if (tokens[0] == "save") 
@@ -101,7 +101,7 @@ void Menu::loadWAB(const std::string& fileName)
 	}
 }
 
-void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const bool& initialize)
+void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize)
 {
 	std::ifstream file(fileName);
 	std::string line;
@@ -112,7 +112,7 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 	{
 		if (file.is_open())
 		{
-			std::cout << ">> epoch no." << i << " START" << std::endl;//temp<<<<<<
+			std::cout << ">> epoch No." << i << " START" << std::endl;//temp<<<<<<
 			std::getline(file, line);
 			while (std::getline(file, line))
 			{
@@ -130,11 +130,11 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 				if (counter == batchSize)
 				{
 					//network.initializeWAB(nHiLayerNeurons, 10);
-					std::cout << ">> initialization_done" << std::endl;//temp<<<<<<
+					//std::cout << ">> initialization_done" << std::endl;//temp<<<<<<
 					network.forwardPropagation();
-					std::cout << ">> forProp_done" << std::endl;//temp<<<<<<
-					network.backwardPropagation();
-					std::cout << ">> backProp_done" << std::endl;//temp<<<<<<
+					//std::cout << ">> forProp_done" << std::endl;//temp<<<<<<
+					network.backwardPropagation(learningRate);
+					//std::cout << ">> backProp_done" << std::endl;//temp<<<<<<
 					network.kill_minst();
 					counter = 0;
 				}

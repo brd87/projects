@@ -104,11 +104,11 @@ public:
 	//void forwardPropagation(const int& example);
 	//void backwardPropagation(const int& example);
 	void forwardPropagation();
-	void backwardPropagation();
+	void backwardPropagation(const double& learningRate);
 	//void updateWAB(const double**& ouWABGradient, const double**& ouXGradient, const double**& hiWABGradient, const double**& hiXGradient);
-	void updateWAB(double** ouWABGradient, double** ouXGradient, double** hiWABGradient, double** hiXGradient);
+	void updateWAB(double** ouWABGradient, double** ouXGradient, double** hiWABGradient, double** hiXGradient, const double& learningRate);
 	void epoch();
-	void getOutput(const std::vector<double>& outputNeurons);
+	int getOutput(const std::vector<double>& outputNeurons);
 	//void modify_hiLayer(const HiddenLayer& newhiLayer);
 	//void modify_ouLayer(const OutputLayer& newouLayer);
 	void modify_hiLayer(const DeepLayer& newhiLayer);
@@ -131,7 +131,7 @@ public:
 
 	void start();
 	void loadWAB(const std::string& fileName);
-	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const bool& initialize);
+	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize);
 	void saveWAB(const std::string& fileName);
 	void feed(const std::string& fileName, const int& task);
 };
