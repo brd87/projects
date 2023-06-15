@@ -1,4 +1,5 @@
 #include <vector>
+#include <iostream> //temp<<<<<<
 
 #include "classes.h"
 
@@ -40,6 +41,7 @@ void Layer::modify_Neurons(const int& index, const std::vector<double>& newNeuro
 }
 void Layer::add_Neurons(const std::vector<double>& newNeurons)
 {
+	//std::cout << "added";//temp<<<<<<
 	neurons.push_back(newNeurons);
 }
 std::vector<double> Layer::return_Neurons(const int& index)

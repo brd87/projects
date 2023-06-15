@@ -106,7 +106,7 @@ public:
 	void forwardPropagation(const bool& mode);
 	void backwardPropagation(const double& learningRate);
 	//void updateWAB(const double**& ouWABGradient, const double**& ouXGradient, const double**& hiWABGradient, const double**& hiXGradient);
-	void updateWAB(double** ouWABGradient, double** ouXGradient, double** hiWABGradient, double** hiXGradient, const double& learningRate);
+	void updateWAB(double** ouWABGradient, double** hiWABGradient, const double& learningRate);
 	void epoch();
 	int getOutput(const std::vector<double>& outputNeurons);
 	//void modify_hiLayer(const HiddenLayer& newhiLayer);

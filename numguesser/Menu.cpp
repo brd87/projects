@@ -12,7 +12,12 @@ void Menu::start()
 	std::string input;
 	while (true)
 	{
-		std::cout << "Enter command: ";
+		std::cout << "Command list\n" << std::endl;
+		std::cout << "- Load file with weights and biases:\n\tset [file name]" << std::endl;
+		std::cout << "- Train network with chossen data set:\n\ttrain [file name] [number of hidden neurons] [mini-batch size] [number of epochs] [learning rate] [inistialize WAB 1/0] [data range (-1 for unlimited)]" << std::endl;
+		std::cout << "- Save weights and biases into file:\n\tsave [file name]" << std::endl;
+		std::cout << "- Display and guess number from test file:\n\tfeed [file name] [number index]" << std::endl;
+		std::cout << "\nEnter command: ";
 		std::getline(std::cin, input);
 		std::stringstream ss(input);
 		std::vector<std::string> tokens;
@@ -46,63 +51,74 @@ void Menu::start()
 
 void Menu::loadWAB(const std::string& fileName)
 {
-	std::cout << "loadWAB start" << std::endl;//temp<<<<<<
-	//std::vector<HiddenLayer> hold_hiLayers;
-	//OutputLayer hold_ouLayer;
-	//HiddenLayer hold_hiLayer;
-	DeepLayer hold_ouLayer;
-	DeepLayer hold_hiLayer;
-	std::vector<double> hold_bias;
-	std::vector<double> hold_nuronWeights;
-	std::vector<std::vector<double>> hold_weights;
+	
+	//std::cout << "loadWAB start" << std::endl; //temp<<<<<<
+	DeepLayer holdLayer;
+	std::vector<double> holdBias;
+	std::vector<std::vector<double>> holdWeights;
 	std::ifstream file(fileName);
 	std::string line;
-	std::string value;
 	bool isH = false;
-	std::cout << "try file" << std::endl;//temp<<<<<<
+	//std::cout << "try file" << std::endl; //temp<<<<<<
 	if (file.is_open())
 	{
 		while (std::getline(file, line))
 		{
-			std::cout << "go for hidden" << std::endl;//temp<<<<<<
+			if (line.empty()) continue;
 			if (line == "W")
 			{
-				if (isH)
-				{
-					hold_hiLayer.modify_Bias(hold_bias);
-					hold_hiLayer.modify_Weights(hold_weights);
-					//hold_hiLayers.push_back(hold_hiLayer);
-				}
-				else
-				{
-					hold_ouLayer.modify_Bias(hold_bias);
-					hold_ouLayer.modify_Weights(hold_weights);
-				}
-				isH = 1;
-				hold_bias.clear();
-				hold_weights.clear();
+				isH = true;
+				holdLayer.modify_Bias(holdBias);
+				holdLayer.modify_Weights(holdWeights);
+				network.modify_ouLayer(holdLayer);
+				holdBias.clear();
+				holdWeights.clear();
 				continue;
 			}
+			bool isBias = true;
+			std::string value;
+			std::vector<double> holdNuronWeights;
 			std::stringstream ss(line);
-			hold_nuronWeights.clear();
-			std::getline(ss, value, ',');
-			hold_bias.push_back(std::stod(value));
+
 			while (std::getline(ss, value, ','))
 			{
-				hold_nuronWeights.push_back(std::stod(value));
+				if (!value.empty())
+				{
+					if (isBias)
+					{
+						holdBias.push_back(std::stod(value));
+						isBias = false;
+					}
+					else
+					{
+						holdNuronWeights.push_back(std::stod(value));
+					}
+				}
 			}
-			hold_weights.push_back(hold_nuronWeights);
+			holdWeights.push_back(holdNuronWeights);
 		}
+
 		file.close();
-		//network.modify_hiLayers(hold_hiLayers);
-		network.modify_hiLayer(hold_hiLayer);
-		network.modify_ouLayer(hold_ouLayer);
+		holdLayer.modify_Bias(holdBias);
+		holdLayer.modify_Weights(holdWeights);
+		network.modify_hiLayer(holdLayer);
 	}
 	else
 	{
-		std::cout << "Error: Faild to open a file." << std::endl;
+		std::cout << "Error: Failed to open a file." << std::endl;
 	}
-	std::cout << "loadWAB done" << std::endl;//temp<<<<<<
+	//std::cout << "loadWAB done" << std::endl; //temp<<<<<<
+	
+	std::cout << "Output Layer:" << std::endl;
+	std::cout << "  Number of Biases: " << network.return_ouLayer().return_Bias().size() << std::endl;
+	std::cout << "  Number of Weight sets: " << network.return_ouLayer().return_Weights().size() << std::endl;
+	std::cout << "  Number of Weights per Neuron: " << network.return_ouLayer().return_Weights()[0].size() << std::endl;
+
+	std::cout << "Hidden Layer:" << std::endl;
+	std::cout << "  Number of Biases: " << network.return_hiLayer().return_Bias().size() << std::endl;
+	std::cout << "  Number of Weight sets: " << network.return_hiLayer().return_Weights().size() << std::endl;
+	std::cout << "  Number of Weights per Neuron: " << network.return_hiLayer().return_Weights()[0].size() << std::endl;
+	
 }
 
 void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize, const int& batchRange)
@@ -112,12 +128,14 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 	std::string value;
 	int counter=0;
 	if(initialize==false) network.initializeWAB(nHiLayerNeurons, 10);
-	for (int i = 0; i < epochSize; i++)
+	if (file.is_open())
 	{
-		int range = 0;
-		if (file.is_open())
+		for (int i = 0; i < epochSize; i++)
 		{
-			std::cout << ">> epoch No." << i << " START" << std::endl;//temp<<<<<<
+			int range = 0;
+
+			std::cout << ">> epoch No." << i << " START" << std::endl;
+
 			std::getline(file, line);
 			while (std::getline(file, line))
 			{
@@ -126,39 +144,48 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 				std::getline(ss, value, ',');
 				item.label = std::stoi(value);
 				item.targetOutput[item.label] = 1;
+
 				while (std::getline(ss, value, ','))
 				{
 					item.pixels.push_back(std::stoi(value));
 				}
+
 				network.add_minst(item);
-				//std::cout << "> example added" << std::endl;//temp<<<<<<
+
 				if (counter == batchSize)
 				{
-					//network.initializeWAB(nHiLayerNeurons, 10);
-					//std::cout << ">> initialization_done" << std::endl;//temp<<<<<<
 					network.forwardPropagation(true);
-					//std::cout << ">> forProp_done" << std::endl;//temp<<<<<<
 					network.backwardPropagation(learningRate);
-					//std::cout << ">> backProp_done" << std::endl;//temp<<<<<<
 					network.kill_minst();
 					counter = 0;
+
 					if (batchRange >= 0)
-						if (range == batchRange) break;
+					{
+						if (range == batchRange)
+						{
+							file.close();
+							file.open(fileName);  // Reopen the file to start reading from the beginning
+							range = 0;  // Reset the range counter
+							break;
+						}
 						range++;
+					}
 				}
 
 				counter++;
 			}
+
 			network.epoch();
-			file.close();
-			std::cout << ">> epoch DONE" << std::endl;//temp<<<<<<
+			std::cout << ">> epoch DONE" << std::endl;
 		}
-		else
-		{
-			std::cout << "Error: Faild to open a file." << std::endl;
-			break;
-		}
+
+		file.close();
 	}
+	else
+	{
+		std::cout << "Error: Failed to open the file." << std::endl;
+	}
+	
 }
 
 void Menu::saveWAB(const std::string& fileName)

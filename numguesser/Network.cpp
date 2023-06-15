@@ -7,24 +7,13 @@
 
 void Network::initializeWAB(const int& nHiddenNeurons, const int& nOutputNeurons)
 {
-	std::cout << "> WAB start_hi" << std::endl;
+	//std::cout << "> WAB start_hi" << std::endl;
 	hiLayer.initializeLayer(2, 1, nHiddenNeurons, 784);
-	std::cout << "> WAB start_ou" << std::endl;
+	//std::cout << "> WAB start_ou" << std::endl;
 	ouLayer.initializeLayer(2, 1, nOutputNeurons, nHiddenNeurons);
-	std::cout << "> WAB done" << std::endl;
+	//std::cout << "> WAB done" << std::endl;
 }
-/*
-void forwardPropagation(const int& example)
-{
-	inLayer.modify_Neurons(minst[example].pixels);
-	std::vector<double> neuronSet = inLayer.return_Neurons();
-	hiLayer.calculateActivation(neuronSet);
-	neuronSet = hiLayer.return_Neurons();
-	ouLayer.calculateActivation(neuronSet);
-	std::vector<double> outputNeurons = ouLayer.return_Neurons();
-	getOutput(outputNeurons);
-}
-*/
+
 void Network::forwardPropagation(const bool& mode)
 {	
 	//std::cout << ">> ForP start" << std::endl; //temp<<<<<<
@@ -35,16 +24,14 @@ void Network::forwardPropagation(const bool& mode)
 		inLayer.add_Neurons(minst[index].pixels);
 		//std::cout << "> INdone : "; //temp<<<<<<
 		std::vector<double> neuronSet = inLayer.return_Neurons(index);
-		//hiLayer.calculateActivation(neuronSet);
 		hiLayer.add_Neurons(calculateActivation(neuronSet, hiLayer.return_Weights(), hiLayer.return_Bias()));
 		//std::cout << "HIdone : "; //temp<<<<<<
 		neuronSet = hiLayer.return_Neurons(index);
-		//ouLayer.calculateActivation(neuronSet);
 		ouLayer.add_Neurons(calculateActivation(neuronSet, ouLayer.return_Weights(), ouLayer.return_Bias()));
 		//std::cout << "OUdone" << std::endl; //temp<<<<<<
 		std::vector<double> outputNeurons = ouLayer.return_Neurons(index);
 		int guess = getOutput(outputNeurons);
-		//std::cout << "Guessed number: " << guess << " should be: " << minst[index].label << std::endl;
+		//std::cout << "Guessed number: " << guess << " should be: " << minst[index].label << std::endl;//temp<<<<<<
 		if (guess == minst[index].label && mode) win++;
 		if (!mode) std::cout << "Guessed number: " << guess << std::endl;
 	}
@@ -55,25 +42,6 @@ void Network::forwardPropagation(const bool& mode)
 	//std::cout << ">> ForP done" << std::endl; //temp<<<<<<
 }
 
-/*
-void Network::backwardPropagation(const int& example)
-{
-	std::vector<double> holdOuNeurons = ouLayer.return_Neurons();
-	std::vector<double> holdHiNeurons = hiLayer.return_Neurons();
-	std::vector<double> holdInNeurons = hiLayer.return_Neurons();
-	double* target = minst[example].targetOutput;
-	double** ouGradient = new double* [holdOuNeurons.size()];
-	for (int i = 0; i < holdOuNeurons.size(); i++)
-	{
-		ouGradient[i] = new double[holdHiNeurons.size() + 1];
-		for (int n = 0; n < holdHiNeurons.size(); n++)
-		{
-			ouGradient[i][n] = holdHiNeurons[n] * sigmoidDerivative(singleWABprocessing(holdHiNeurons, ouLayer.return_Weights()[i], ouLayer.return_Bias()[i])) * 2 * (holdOuNeurons[i] - target[i]);
-		}
-		ouGradient[i][holdHiNeurons.size()] = sigmoidDerivative(singleWABprocessing(holdHiNeurons, ouLayer.return_Weights()[i], ouLayer.return_Bias()[i])) * 2 * (holdOuNeurons[i] - target[i]);
-	}
-}
-*/
 void Network::backwardPropagation(const double& learningRate)
 {
 	std::cout << ">> BackP start" << std::endl; //temp<<<<<<
@@ -85,7 +53,7 @@ void Network::backwardPropagation(const double& learningRate)
 	double** ouWABGradient = new double* [holdOuNeurons[0].size()];
 	double** ouXGradient = new double* [holdOuNeurons[0].size()];
 	double** hiWABGradient = new double* [holdHiNeurons[0].size()];
-	double** hiXGradient = new double* [holdHiNeurons[0].size()];
+	//double** hiXGradient = new double* [holdHiNeurons[0].size()];
 	for (int i = 0; i < holdOuNeurons[0].size(); i++)
 	{
 		ouWABGradient[i] = new double[holdHiNeurons[0].size() + 1]();
@@ -94,31 +62,22 @@ void Network::backwardPropagation(const double& learningRate)
 	for (int i = 0; i < holdHiNeurons[0].size(); i++)
 	{
 		hiWABGradient[i] = new double[holdInNeurons[0].size() + 1]();
-		hiXGradient[i] = new double[holdInNeurons[0].size()]();
+		//hiXGradient[i] = new double[holdInNeurons[0].size()]();
 	}
 	for (int index = 0; index < minst.size(); index++)
 	{
-		//double** ouWABGradient = new double* [holdOuNeurons[index].size()];
-		//double** ouXGradient = new double* [holdOuNeurons[index].size()];
-		//double** hiWABGradient = new double* [holdHiNeurons[index].size()];
-		//double** hiXGradient = new double* [holdHiNeurons[index].size()];
+		std::vector<double> test;
 		double* target = minst[index].targetOutput;
 		double* deltaOuLayer = new double[holdOuNeurons[index].size()];
 		for (int i = 0; i < holdOuNeurons[index].size(); i++)
 		{
-			//ouWABGradient[i] = new double[holdHiNeurons[index].size() + 1];
-			//ouXGradient[i] = new double[holdHiNeurons[index].size()];
-			//std::cout << ">> BackP bump 1: " << i << std::endl; //temp<<<<<<
-			//std::cout << "> OU : N-" << holdHiNeurons[index].size() << ", WpN-" << ouLayer.return_Weights()[i].size() << std::endl; //temp<<<<<<
-
-			//double deltaOu = sigmoidDerivative(holdOuNeurons[index][i]) * 2 * (holdOuNeurons[index][i] - target[i]);
-			//deltaOuLayer[i] = deltaOu;
 			deltaOuLayer[i] = sigmoidDerivative(holdOuNeurons[index][i]) * 2 * (holdOuNeurons[index][i] - target[i]);
 			//std::cout << ">> BackP bump 2: " << i << std::endl; //temp<<<<<<
 			for (int n = 0; n < holdHiNeurons[index].size(); n++)
 			{
 				ouWABGradient[i][n] += holdHiNeurons[index][n] * deltaOuLayer[i]; //backprop into weight
-				ouXGradient[i][n] += holdOuWeights[i][n] * deltaOuLayer[i]; //backprop into input
+				//ouXGradient[i][n] += holdOuWeights[i][n] * deltaOuLayer[i]; //backprop into input
+				test.push_back(holdOuWeights[i][n] * deltaOuLayer[i]);
 			}
 			ouWABGradient[i][holdHiNeurons[index].size()] += deltaOuLayer[i]; //backprop into bias
 			//std::cout << ">> BackP bump 3: " << i << std::endl; //temp<<<<<<
@@ -127,47 +86,28 @@ void Network::backwardPropagation(const double& learningRate)
 		//std::cout << ">> BackP ouPushed" << std::endl; //temp<<<<<<
 		for (int i = 0; i < holdHiNeurons[index].size(); i++)
 		{
-			//hiWABGradient[i] = new double[holdInNeurons[index].size() + 1];
-			//hiXGradient[i] = new double[holdInNeurons[index].size()];
-			//std::cout << ">> BackP bump 1: " << i << std::endl; //temp<<<<<<
-			//std::cout << "> HI : N-" << holdInNeurons[index].size() << ", WpN-" << hiLayer.return_Weights()[i].size() << std::endl; //temp<<<<<<
 			double sumDeltaTimesWeight = 0.0;
 			for (int n = 0; n < holdOuNeurons[index].size(); n++)
 			{
 				sumDeltaTimesWeight += holdOuWeights[n][i] * deltaOuLayer[n];
 			}
-			double deltaHiLayer = sumDeltaTimesWeight * sigmoidDerivative(holdHiNeurons[index][i]);
-			//std::cout << ">> BackP bump 2: " << i << std::endl; //temp<<<<<<
-
+			double deltaHiLayer = sumDeltaTimesWeight * sigmoidDerivative(holdHiNeurons[index][i]) * test[i];
+			//std::cout << "deltaHiLayer " << deltaHiLayer << std::endl;
 			for (int n = 0; n < holdInNeurons[index].size(); n++)
 			{
 				hiWABGradient[i][n] += holdInNeurons[index][n] * deltaHiLayer; // backprop into weight
-				hiXGradient[i][n] += holdHiWeights[i][n] * deltaHiLayer; // backprop into input
+				//hiXGradient[i][n] += holdHiWeights[i][n] * deltaHiLayer; // backprop into input
 			}
 			hiWABGradient[i][holdInNeurons[index].size()] += deltaHiLayer; // backprop into bias
 			//std::cout << ">> BackP bump 3: " << i << std::endl; //temp<<<<<<
 		}
+		test.clear();
 		delete[] deltaOuLayer;
-		//std::cout << ">> BackP hiPushed" << std::endl; //temp<<<<<<
-		/*
-		for (int i = 0; i < holdOuNeurons[index].size(); i++)
-		{
-			delete[] ouWABGradient[i];
-			delete[] ouXGradient[i];
-		}
-		for (int i = 0; i < holdHiNeurons[index].size(); i++)
-		{
-			delete[] hiWABGradient[i];
-			delete[] hiXGradient[i];
-		}
-		*/
 	}
 
 	for (auto i : ouLayer.return_Bias()) std::cout << i << " | ";
 	std::cout << std::endl;
-	updateWAB(ouWABGradient, ouXGradient, hiWABGradient, hiXGradient, learningRate);
-	//forwardPropagation();
-	//std::cout << "-----------------------" << std::endl;
+	updateWAB(ouWABGradient, hiWABGradient, learningRate);
 	for (auto i : ouLayer.return_Bias()) std::cout << i << " | ";
 	std::cout << std::endl;
 
@@ -179,16 +119,16 @@ void Network::backwardPropagation(const double& learningRate)
 	for (int i = 0; i < holdHiNeurons[0].size(); i++)
 	{
 		delete[] hiWABGradient[i];
-		delete[] hiXGradient[i];
+		//delete[] hiXGradient[i];
 	}
 	delete[] ouWABGradient;
 	delete[] ouXGradient;
 	delete[] hiWABGradient;
-	delete[] hiXGradient;
+	//delete[] hiXGradient;
 	//std::cout << ">> BackP done" << std::endl; //temp<<<<<<
 }
 
-void Network::updateWAB(double** ouWABGradient, double** ouXGradient, double** hiWABGradient, double** hiXGradient, const double& learningRate)
+void Network::updateWAB(double** ouWABGradient, double** hiWABGradient, const double& learningRate)
 {
 	//std::cout << ">> upWAB start" << std::endl; //temp<<<<<<
 	int sizeOuNeurons = ouLayer.return_allNeurons()[0].size();
@@ -201,15 +141,15 @@ void Network::updateWAB(double** ouWABGradient, double** ouXGradient, double** h
 
 	for (int i = 0; i < sizeOuNeurons; i++) {
 		for (int n = 0; n < sizeHiNeurons; n++) {
-			holdOuWeights[i][n] -= learningRate * ouWABGradient[i][n] / minst.size();
+			holdOuWeights[i][n] -= learningRate * ouWABGradient[i][n];// / minst.size();
 		}
-		holdOuBias[i] -= learningRate * ouWABGradient[i][sizeHiNeurons] / minst.size();
+		holdOuBias[i] -= learningRate * ouWABGradient[i][sizeHiNeurons];// / minst.size();
 	}
 	for (int i = 0; i < sizeHiNeurons; i++) {
 		for (int n = 0; n < sizeInNeurons; n++) {
-			holdHiWeights[i][n] -= learningRate * hiWABGradient[i][n] / minst.size();
+			holdHiWeights[i][n] -= learningRate * hiWABGradient[i][n];// / minst.size();
 		}
-		holdHiBias[i] -= learningRate * hiWABGradient[i][sizeInNeurons] / minst.size();
+		holdHiBias[i] -= learningRate * hiWABGradient[i][sizeInNeurons];// / minst.size();
 	}
 	ouLayer.modify_Weights(holdOuWeights);
 	ouLayer.modify_Bias(holdOuBias);
@@ -251,12 +191,12 @@ void Network::modify_ouLayer(const OutputLayer& newouLayer)
 */
 void Network::modify_hiLayer(const DeepLayer& newhiLayer)
 {
-	delete& hiLayer;
+	//delete& hiLayer;
 	hiLayer = newhiLayer;
 }
 void Network::modify_ouLayer(const DeepLayer& newouLayer)
 {
-	delete& ouLayer;
+	//delete& ouLayer;
 	ouLayer = newouLayer;
 }
 void Network::modify_minst(const std::vector<MINSTdata>& newminst)
