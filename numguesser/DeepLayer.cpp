@@ -1,56 +1,28 @@
 #include <random>
 #include <chrono>
-#include <iostream>//temp<<<<<<
 
 #include "classes.h"
 
 
 void DeepLayer::initializeLayer(const int& biasRange, const int& weightsRange, const int& currentLayer, const int& prevLayer)
 {
-	//std::cout << "> DL 1" << std::endl;//temp<<<<<<
 	for (int i = 0; i < currentLayer; i++)
 	{
 		std::vector<double> newWeight;
 		bias.push_back((random(2) - 1) * biasRange);
-		//std::cout << "> DL bias " << i << std::endl;//temp<<<<<<
 		for (int w = 0; w < prevLayer; w++)
 		{
 			newWeight.push_back((random(2) - 1) * weightsRange);
 		}
 		weights.push_back(newWeight);
-		//std::cout << "> DL weights" << std::endl;//temp<<<<<<
 	}
 }
-/*
-void DeepLayer::calculateActivation(const std::vector<double>& inputNeurons)
+double DeepLayer::random(const int& range)
 {
-	std::vector<double> outputNeurons;
-	for (int i = 0; i < bias.size(); i++)
-	{
-		outputNeurons.push_back(sigmoid(singleWABprocessing(inputNeurons, weights[i], bias[i])));
-	}
-	modify_Neurons(outputNeurons);
+	std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
+	std::uniform_real_distribution<double> rozklad(0, range);
+	return rozklad(engine);
 }
-*/
-/*
-void DeepLayer::calculateActivation(const std::vector<double>& inputNeurons)
-{
-	std::vector<double> outputNeurons;
-	for (int i = 0; i < bias.size(); i++)
-	{
-		outputNeurons.push_back(sigmoid(singleWABprocessing(inputNeurons, weights[i], bias[i])));
-	}
-	add_Neurons(outputNeurons);
-}
-
-double DeepLayer::singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputbias)
-{
-	double holdNeuron = 0;
-	for (int i = 0; i < inputWeights.size(); i++) holdNeuron += inputWeights[i] * inputNeurons[i];
-	return holdNeuron + inputbias;
-}
-*/
-
 ////modify&return
 void DeepLayer::modify_Bias(const std::vector<double>& newbias)
 {
@@ -70,3 +42,35 @@ std::vector<double> DeepLayer::return_Bias()
 {
 	return bias;
 }
+void DeepLayer::kill_WAB()
+{
+	bias.clear();
+	weights.clear();
+}
+DeepLayer& DeepLayer::operator-(ouBackprop& other) 
+{
+	std::vector<std::vector<double>> gradient = other.return_Gradient();
+	for (int i = 0; i < bias.size(); i++) 
+	{
+		for (int n = 0; n < weights[i].size(); n++) 
+		{
+			this->weights[i][n] -= gradient[i][n];
+		}
+		this->bias[i] -= gradient[i][weights[i].size()];
+	}
+	return *this;
+}
+DeepLayer& DeepLayer::operator-(hiBackprop& other)
+{
+	std::vector<std::vector<double>> gradient = other.return_Gradient();
+	for (int i = 0; i < bias.size(); i++)
+	{
+		for (int n = 0; n < weights[i].size(); n++)
+		{
+			this->weights[i][n] -= gradient[i][n];
+		}
+		this->bias[i] -= gradient[i][weights[i].size()];
+	}
+	return *this;
+}
+

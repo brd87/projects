@@ -10,14 +10,18 @@
 void Menu::start()
 {
 	std::string input;
+	bool isSet = false;
 	while (true)
 	{
+		std::cout << "/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////" << std::endl;
 		std::cout << "Command list\n" << std::endl;
 		std::cout << "- Load file with weights and biases:\n\tset [file name]" << std::endl;
-		std::cout << "- Train network with chossen data set:\n\ttrain [file name] [number of hidden neurons] [mini-batch size] [number of epochs] [learning rate] [inistialize WAB 1/0] [data range (-1 for unlimited)]" << std::endl;
+		std::cout << "- Train network with chossen data set:\n\ttrain [file name] [number of hidden neurons] [mini-batch size] [number of epochs] [learning rate] [is WAB? 1/0] [data range (-1 for unlimited)]" << std::endl;
 		std::cout << "- Save weights and biases into file:\n\tsave [file name]" << std::endl;
 		std::cout << "- Display and guess number from test file:\n\tfeed [file name] [number index]" << std::endl;
-		std::cout << "\nEnter command: ";
+		std::cout << "- Quit:\n\tq" << std::endl;
+		std::cout << "/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////" << std::endl;
+		std::cout << "Enter command: ";
 		std::getline(std::cin, input);
 		std::stringstream ss(input);
 		std::vector<std::string> tokens;
@@ -27,23 +31,48 @@ void Menu::start()
 
 		if (tokens[0] == "set") 
 		{
-			if (tokens.size() == 2) loadWAB(tokens[1]);
+			if (tokens.size() == 2)
+			{
+				loadWAB(tokens[1]);
+				if(network.return_ouLayer().return_Bias().size()!=0) isSet = true;
+			}
 			else std::cout << "Invalid number of parameters for 'set' command." << std::endl;
 		}
 		else if (tokens[0] == "train") 
 		{
-			if (tokens.size() == 8) train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stod(tokens[5]), std::stoi(tokens[6]), std::stoi(tokens[7]));
-			else std::cout << "Invalid number of parameters for 'train' command." << std::endl;
+			if (tokens.size() == 8)
+			{
+				if (!isSet && std::stoi(tokens[6]) == 1) std::cout << "Weights and Biases are not initialized." << std::endl;
+				else
+				{
+					train(tokens[1], std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stod(tokens[5]), std::stoi(tokens[6]), std::stoi(tokens[7]));
+					isSet = true;
+				}
+			}
+			else std::cout << "Invalid number of parameters for 'train' command." << std::endl;\
+			
 		}
 		else if (tokens[0] == "save") 
 		{
-			if (tokens.size() == 2) saveWAB(tokens[1]);
+			if (tokens.size() == 2)
+			{
+				if (!isSet) std::cout << "Weights and Biases are not initialized." << std::endl;
+				else saveWAB(tokens[1]);
+			}
 			else std::cout << "Invalid number of parameters for 'save' command." << std::endl;
 		}
 		else if (tokens[0] == "feed") 
 		{
-			if (tokens.size() == 3) feed(tokens[1], std::stoi(tokens[2]));
+			if (tokens.size() == 3)
+			{
+				if (!isSet) std::cout << "Weights and Biases are not initialized." << std::endl;
+				else feed(tokens[1], std::stoi(tokens[2]));
+			}
 			else std::cout << "Invalid number of parameters for 'feed' command." << std::endl;
+		}
+		else if(tokens[0] == "q")
+		{
+			break;
 		}
 		else std::cout << "Invalid command." << std::endl;
 	}
@@ -51,15 +80,12 @@ void Menu::start()
 
 void Menu::loadWAB(const std::string& fileName)
 {
-	
-	//std::cout << "loadWAB start" << std::endl; //temp<<<<<<
 	DeepLayer holdLayer;
 	std::vector<double> holdBias;
 	std::vector<std::vector<double>> holdWeights;
 	std::ifstream file(fileName);
 	std::string line;
 	bool isH = false;
-	//std::cout << "try file" << std::endl; //temp<<<<<<
 	if (file.is_open())
 	{
 		while (std::getline(file, line))
@@ -102,23 +128,27 @@ void Menu::loadWAB(const std::string& fileName)
 		holdLayer.modify_Bias(holdBias);
 		holdLayer.modify_Weights(holdWeights);
 		network.modify_hiLayer(holdLayer);
+		if (network.return_ouLayer().return_Bias().size() != 0)
+		{
+			std::cout << "Output Layer:" << std::endl;
+			std::cout << "  Number of Biases: " << network.return_ouLayer().return_Bias().size() << std::endl;
+			std::cout << "  Number of Weight sets: " << network.return_ouLayer().return_Weights().size() << std::endl;
+			std::cout << "  Number of Weights per Neuron: " << network.return_ouLayer().return_Weights()[0].size() << std::endl;
+
+			std::cout << "Hidden Layer:" << std::endl;
+			std::cout << "  Number of Biases: " << network.return_hiLayer().return_Bias().size() << std::endl;
+			std::cout << "  Number of Weight sets: " << network.return_hiLayer().return_Weights().size() << std::endl;
+			std::cout << "  Number of Weights per Neuron: " << network.return_hiLayer().return_Weights()[0].size() << std::endl;
+		}
+		else
+		{
+			std::cout << "No data loaded from file." << std::endl;
+		}
 	}
 	else
 	{
 		std::cout << "Error: Failed to open a file." << std::endl;
 	}
-	//std::cout << "loadWAB done" << std::endl; //temp<<<<<<
-	
-	std::cout << "Output Layer:" << std::endl;
-	std::cout << "  Number of Biases: " << network.return_ouLayer().return_Bias().size() << std::endl;
-	std::cout << "  Number of Weight sets: " << network.return_ouLayer().return_Weights().size() << std::endl;
-	std::cout << "  Number of Weights per Neuron: " << network.return_ouLayer().return_Weights()[0].size() << std::endl;
-
-	std::cout << "Hidden Layer:" << std::endl;
-	std::cout << "  Number of Biases: " << network.return_hiLayer().return_Bias().size() << std::endl;
-	std::cout << "  Number of Weight sets: " << network.return_hiLayer().return_Weights().size() << std::endl;
-	std::cout << "  Number of Weights per Neuron: " << network.return_hiLayer().return_Weights()[0].size() << std::endl;
-	
 }
 
 void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize, const int& batchRange)
@@ -127,14 +157,16 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 	std::string line;
 	std::string value;
 	int counter=0;
-	if(initialize==false) network.initializeWAB(nHiLayerNeurons, 10);
+
+	if (initialize == false) network.initializeWAB(nHiLayerNeurons, 10);
+
 	if (file.is_open())
 	{
 		for (int i = 0; i < epochSize; i++)
 		{
-			int range = 0;
-
-			std::cout << ">> epoch No." << i << " START" << std::endl;
+			int range = 1;
+			bool firstBatch = true;
+			std::cout << "Epoch No." << i+1 << std::endl;
 
 			std::getline(file, line);
 			while (std::getline(file, line))
@@ -151,21 +183,20 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 				}
 
 				network.add_minst(item);
-
-				if (counter == batchSize)
+				if (counter == batchSize || (firstBatch && counter==(batchSize-1)))
 				{
 					network.forwardPropagation(true);
 					network.backwardPropagation(learningRate);
 					network.kill_minst();
 					counter = 0;
-
+					firstBatch = false;
 					if (batchRange >= 0)
 					{
-						if (range == batchRange)
+						if (batchRange <= range)
 						{
 							file.close();
-							file.open(fileName);  // Reopen the file to start reading from the beginning
-							range = 0;  // Reset the range counter
+							file.open(fileName);
+							range = 0;
 							break;
 						}
 						range++;
@@ -176,7 +207,6 @@ void Menu::train(const std::string& fileName, const int& nHiLayerNeurons, const 
 			}
 
 			network.epoch();
-			std::cout << ">> epoch DONE" << std::endl;
 		}
 
 		file.close();
@@ -220,7 +250,6 @@ void Menu::saveWAB(const std::string& fileName)
 
 void Menu::feed(const std::string& fileName, const int& task)
 {
-	//std::cout << "feed start" << std::endl;//temp<<<<<<
 	std::ifstream file(fileName);
 	std::string line;
 	std::string value;
@@ -264,5 +293,4 @@ void Menu::feed(const std::string& fileName, const int& task)
 		network.kill_minst();
 	}
 	else std::cout << "Error: Faild to open a file." << std::endl;
-	//std::cout << "feed done" << std::endl;//temp<<<<<<
 }

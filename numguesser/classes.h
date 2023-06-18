@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#include "functions.h"
 #include "structures.h"
 
 //used database: https://www.kaggle.com/datasets/oddrationale/mnist-in-csv?resource=download
@@ -14,66 +13,14 @@
 class Layer
 {
 private:
-	//std::vector<double> neurons;
 	std::vector<std::vector<double>> neurons;
 public:
-    //double sigmoid(const double& neuron);
-    //double sigmoidDerivative(const double& neuron);
-
-	////modify&return
-	//void modify_Neurons(const std::vector<double>& newNeurons);
-	//std::vector<double> return_Neurons();
 	void modify_Neurons(const int& index, const std::vector<double>& newNeurons);
 	void add_Neurons(const std::vector<double>& newNeurons);
 	std::vector<double> return_Neurons(const int& index);
 	std::vector<std::vector<double>> return_allNeurons();
 	void kill_neurons();
 };
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-class DeepLayer : public Layer
-{
-private:
-    std::vector<double> bias;
-    std::vector<std::vector<double>> weights;
-
-public:
-    void initializeLayer(const int& biasRange, const int& weightsRange, const int& currentLayer, const int& prevLayer);
-    //void calculateActivation(const std::vector<double>& inputNeurons);
-    //double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputBias);
-    void modify_Bias(const std::vector<double>& newBias);
-    void modify_Weights(const std::vector<std::vector<double>>& newWeights);
-    std::vector<std::vector<double>> return_Weights();
-    std::vector<double> return_Bias();
-
-};
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-/*
-class HiddenLayer : public DeepLayer, public Processing
-{
-private:
-	double neurons[100][1000];
-	double bias[1000];
-	double weights[1000][784];
-public:
-	double backProp_Weight(const double& element, const int& index1, const int& index2);
-	double backProp_Bias(const int& index1, const int& index2);
-	double backProp_Input(const double& element, const int& index1, const int& index2);
-};
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-class OutputLayer : public Processing
-{
-private:
-	double neurons[100][1000];
-	double bias[1000];
-	double weights[1000][784];
-public:
-	void calculateActivation(const double* inputNeurons, const int& index);
-	double element(const int& index1, const int& index2);
-	double backProp_Weight(const double& element, const int& index1, const int& index2);
-	double backProp_Bias(const double& element);
-	double backProp_Input(const double& element, const int& index1, const int& index2);
-};
-*/
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 class Processing
@@ -83,40 +30,73 @@ private:
 public:
 	std::vector<double> calculateActivation(const std::vector<double>& inputNeurons, const std::vector<std::vector<double>>& weights, const std::vector<double>& bias);
 	double singleWABprocessing(const std::vector<double>& inputNeurons, const std::vector<double>& inputWeights, const double& inputbias);
-	//double singleWABprocessing2(const double* inputNeurons, const double* inputWeights, const double& inputbias, const int& size);
 	double sigmoid(const double& neuron);
 	double sigmoidDerivative(const double& neuron);
 };
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-class Network : public DeepLayer, public Processing
+class ouBackprop : public Processing
+{
+private:
+	std::vector<std::vector<double>> ouWABGradient;
+	std::vector<double> inputDer;
+	std::vector<double> deltaOuLayer;
+public:
+	void set(const int& size1, const int& size2);
+	void backprop(const std::vector<double>& currentNeurons, const std::vector<double>& previusNeurons, const std::vector<std::vector<double>>& Weights, double* target);
+	void lern(const double& learningRate);
+	std::vector<std::vector<double>> return_Gradient();
+	std::vector<double> return_inputDer();
+	std::vector<double> return_deltaOuLayer();
+	void kill_inputDer();
+	void kill_deltaOuLayer();
+};
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+class hiBackprop : public Processing
+{
+private:
+	std::vector<std::vector<double>> hiWABGradient;
+public:
+	void set(const int& size1, const int& size2);
+	void backprop(const std::vector<double>& currentNeurons, const std::vector<double>& previusNeurons, const std::vector<std::vector<double>>& Weights, const std::vector<double>& deltaOu, const std::vector<double>& inputD, const int& size);
+	void lern(const double& learningRate);
+	std::vector<std::vector<double>> return_Gradient();
+};
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+class DeepLayer : public Layer
+{
+private:
+    std::vector<double> bias;
+    std::vector<std::vector<double>> weights;
+public:
+    void initializeLayer(const int& biasRange, const int& weightsRange, const int& currentLayer, const int& prevLayer);
+    double random(const int& range);
+	void modify_Bias(const std::vector<double>& newBias);
+    void modify_Weights(const std::vector<std::vector<double>>& newWeights);
+    std::vector<std::vector<double>> return_Weights();
+    std::vector<double> return_Bias();
+	void kill_WAB();
+	DeepLayer& operator-(ouBackprop& other);
+	DeepLayer& operator-(hiBackprop& other);
+};
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+class Network : public Processing
 {
 private:
 	std::vector<MINSTdata> minst;
-	//InputLayer inLayer;
-	//HiddenLayer hiLayer;
-	//OutputLayer ouLayer;
-	//std::vector<Layer> layers;
 	Layer inLayer;
 	DeepLayer hiLayer;
 	DeepLayer ouLayer;
 public:
 	void initializeWAB(const int& nHiddenNeurons, const int& nOutputNeurons);
-	//void forwardPropagation(const int& example);
-	//void backwardPropagation(const int& example);
 	void forwardPropagation(const bool& mode);
 	void backwardPropagation(const double& learningRate);
-	//void updateWAB(const double**& ouWABGradient, const double**& ouXGradient, const double**& hiWABGradient, const double**& hiXGradient);
-	void updateWAB(double** ouWABGradient, double** hiWABGradient, const double& learningRate);
+	void updateWAB(ouBackprop& ouGradient, hiBackprop& hiGradient);
 	void epoch();
 	int getOutput(const std::vector<double>& outputNeurons);
-	//void modify_hiLayer(const HiddenLayer& newhiLayer);
-	//void modify_ouLayer(const OutputLayer& newouLayer);
 	void modify_hiLayer(const DeepLayer& newhiLayer);
 	void modify_ouLayer(const DeepLayer& newouLayer);
 	void modify_minst(const std::vector<MINSTdata>& newminst);
 	void add_minst(const MINSTdata& item);
-	//HiddenLayer return_hiLayer();
-	//OutputLayer return_ouLayer();
 	DeepLayer return_hiLayer();
 	DeepLayer return_ouLayer();
 	std::vector<MINSTdata> return_minst();
@@ -128,7 +108,6 @@ class Menu
 private:
 	Network network;
 public:
-
 	void start();
 	void loadWAB(const std::string& fileName);
 	void train(const std::string& fileName, const int& nHiLayerNeurons, const int& batchSize, const int& epochSize, const double& learningRate, const bool& initialize, const int& batchRange);
