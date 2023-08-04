@@ -1,5 +1,7 @@
 import numpy as np
 
+# to do: mapping///////////////////////////////////////////////////////////////
+
 class Checkerboard:
     def __init__(self):
         self.white = 0
@@ -14,6 +16,19 @@ class Checkerboard:
                 elif (row + col) % 2 == 1 and row > 4:
                     self.board[row][col] = 3
                     self.black += 1
+
+
+    def victory_condition(self):
+        if self.white == 0:
+            print("Black is victorius!")
+        if self.black == 0:
+            print("White is victorius!")
+
+
+    def perform_move(self, old_row, old_col, move):
+        self.board[old_row, old_col], self.board[move[1][0], move[1][1]] = self.board[move[1][0], move[1][1]], self.board[old_row, old_col]
+        if move[2] is not None:
+            self.board[move[2][0], move[2][1]] = 0
 
 
     def get_piece_moves(self, row, col):
@@ -45,6 +60,7 @@ class Checkerboard:
         
         return valid_moves
     
+
     def get_queen_moves(self, row, col):
         valid_moves = []
         hostile = [1, 2]  # for 3-4 (black)
@@ -76,6 +92,7 @@ class Checkerboard:
                 current_row, current_col = new_row, new_col
 
         return valid_moves
+
 
     def print_board(self):
         print(f"White: {self.white}")
