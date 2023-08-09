@@ -1,6 +1,9 @@
 import numpy as np
-
-# to do: mapping///////////////////////////////////////////////////////////////
+from moveop import MoveOp
+# todo: mapping///////////////////////////////////////////////////////////////
+# todo: cords
+# todo: chcek queen cords
+# todo: remake score
 
 class Checkerboard:
     def __init__(self):
@@ -17,19 +20,16 @@ class Checkerboard:
                     self.board[row][col] = 3
                     self.black += 1
 
-
     def victory_condition(self):
         if self.white == 0:
             print("Black is victorius!")
         if self.black == 0:
             print("White is victorius!")
 
-
-    def perform_move(self, old_row, old_col, move):
-        self.board[old_row, old_col], self.board[move[1][0], move[1][1]] = self.board[move[1][0], move[1][1]], self.board[old_row, old_col]
+    def perform_move(self, move: MoveOp):
+        self.board[move.source[0]][move.source[1]], self.board[move.target[0]][move.target[1]] = 0, self.board[move.source[0]][move.source[1]]
         if move[2] is not None:
-            self.board[move[2][0], move[2][1]] = 0
-
+            self.board[move.hostile[0]][move.hostile[1]] = 0
 
     def get_piece_moves(self, row, col):
         valid_moves = []
@@ -45,22 +45,24 @@ class Checkerboard:
             if 0 < new_row <= self.board_size and 0 < new_col <= self.board_size:
                 if self.board[new_row, new_col] == 0:
                     if new_col == 1 or new_col == 8:
-                        valid_moves.append((2,[new_row, new_col]))
-                    elif side == 1 and new_row == 1:
-                        valid_moves.append((10,[new_row, new_col]))
-                    elif side == -1 and new_row == 8:
-                        valid_moves.append((10,[new_row, new_col]))
+                        #valid_moves.append((2,[new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row, new_col], 2))
+                    elif (side == 1 and new_row == 1) or (side == -1 and new_row == 8):
+                        #valid_moves.append((10,[new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row, new_col], 10))
                     else:
-                        valid_moves.append((1,[new_row, new_col]))
+                        #valid_moves.append((1,[new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row, new_col], 1))
                 elif self.board[new_row, new_col] in hostile and 0 < (new_row + dr) <= self.board_size and 0 < (new_col + dc) <= self.board_size and self.board[new_row + dr, new_col + dc] == 0:
                     if self.board[new_row, new_col] == hostile[0]:
-                        valid_moves.append((3,[new_row + dr, new_col + dc], [new_row, new_col]))
+                        #valid_moves.append((3,[new_row + dr, new_col + dc], [new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row + dr, new_col + dc], 4, [new_row, new_col]))
                     else:
-                        valid_moves.append((10,[new_row + dr, new_col + dc], [new_row, new_col]))
+                        #valid_moves.append((10,[new_row + dr, new_col + dc], [new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row + dr, new_col + dc], 12, [new_row, new_col]))
         
         return valid_moves
     
-
     def get_queen_moves(self, row, col):
         valid_moves = []
         hostile = [1, 2]  # for 3-4 (black)
@@ -78,14 +80,18 @@ class Checkerboard:
                     break
                 if self.board[new_row, new_col] == 0:
                     if new_col == 1 or new_col == 8 or new_row == 1 or new_row == 8:
-                        valid_moves.append((2, [new_row, new_col]))
+                        #valid_moves.append((2, [new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row, new_col], 2))
                     else:
-                        valid_moves.append((1, [new_row, new_col]))
+                        #valid_moves.append((1, [new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row, new_col], 1))
                 elif self.board[new_row, new_col] in hostile and 0 < (new_row + dr) <= self.board_size and 0 < (new_col + dc) <= self.board_size and self.board[new_row + dr, new_col + dc] == 0:
                     if self.board[new_row, new_col] == hostile[0]:
-                        valid_moves.append((3, [new_row + dr, new_col + dc], [new_row, new_col]))
+                        #valid_moves.append((3, [new_row + dr, new_col + dc], [new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row + dr, new_col + dc], 3, [new_row, new_col]))
                     else:
-                        valid_moves.append((10, [new_row + dr, new_col + dc], [new_row, new_col]))
+                        #valid_moves.append((10, [new_row + dr, new_col + dc], [new_row, new_col]))
+                        valid_moves.append(MoveOp([row, col], [new_row + dr, new_col + dc], 10, [new_row, new_col]))
                     break
                 else:
                     break
@@ -93,15 +99,12 @@ class Checkerboard:
 
         return valid_moves
 
-
     def print_board(self):
         print(f"White: {self.white}")
         print(f"Black: {self.black}")
         for row in self.board:
-            print(" ".join(str(cell) for cell in row))
-            # for cell in row:
-            #     print(cell, end =" ")
-            # print()
+            for cell in row:
+                print(cell, end =" ")
 
-check=Checkerboard()
-check.print_board()
+#check=Checkerboard()
+#check.print_board()
