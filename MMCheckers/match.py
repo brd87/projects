@@ -1,4 +1,5 @@
 from checkerboard import Checkerboard
+from moveop import MoveOp
 
 class Match:
     def __init__(self, player_W, player_B, diff_W, diff_B):
@@ -38,13 +39,13 @@ class Match:
             return self.scoring(arena), None # todo
         best_move = None
         best_score = 0
-        moves = self.get_all_moves(arena, side) # todo
+        moves = self.get_all_moves(arena, side)
         for move in moves:
-            new_board = self.simulate(arena, move) # todo
+            new_board = self.simulate(arena, move)
             score = self.minmax(diff-1, new_board, -side)
             if (score[0] >= best_score and side == 1) or (score[0] <= best_score and side == -1):
                 best_score, best_move = score[0], move
-            return best_score, best_move
+        return best_score, best_move
     
     def scoring(arena: Checkerboard):
         pass
