@@ -6,3 +6,4 @@ class MoveOp:
     target: int
     score: int
     hostile: int = None
+    mutation: bool = False
