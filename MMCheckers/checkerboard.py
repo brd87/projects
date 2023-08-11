@@ -1,10 +1,6 @@
 import numpy as np
 
 from moveop import MoveOp
-# todo: mapping///////////////////////////////////////////////////////////////
-# todo: cords
-# todo: chcek queen cords
-# todo: remake score
 
 class Checkerboard:
     def __init__(self):
@@ -37,6 +33,10 @@ class Checkerboard:
         if move.mutation == True and (self.board[move.target[0]][move.target[1]] == 1 or self.board[move.target[0]][move.target[1]] == 3):
             self.board[move.target[0]][move.target[1]] += 1
         if move.hostile is not None:
+            if self.board[move.hostile[0]][move.hostile[1]] in [1, 2]:
+                self.white -= 1
+            else:
+                self.black -= 1
             self.board[move.hostile[0]][move.hostile[1]] = 0
 
     def get_piece_moves(self, row, col):
@@ -63,7 +63,7 @@ class Checkerboard:
             if move is not None:
                 if move.target[1] == 0 or move.target[1] == (self.board_size-1):
                     move.score += 2 # sides
-                elif (side == 1 and move.target[0] == 0) or (side == -1 and move.target[0] == (self.board_size-1)): # get queen
+                elif (side == -1 and move.target[0] == 0) or (side == 1 and move.target[0] == (self.board_size-1)): # get queen
                     move.score += 10 
                     move.mutation = True
                 valid_moves.append(move)
