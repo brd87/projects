@@ -35,29 +35,31 @@ class Checkerboard:
             self.board[move.hostile[0]][move.hostile[1]] = 0
 
     def get_piece_moves(self, row, col):
+        print(f"Row = {row}, Col = {col}")
         valid_moves = []
-        hostile = [1,2] # for 3-4 (black)
-        side = 1 # for 3-4 (black)
-        if (self.board[row, col] == 1):
+        hostile = [3,4] # for 1-2 (white)
+        side = 1 # for 1-2 (white)
+        if (self.board[row, col] == 3):
             side = -1
-            hostile = [3,4]
+            hostile = [1,2]
         move_directions = [(1*side, -1), (1*side, 1)]
 
         for dr, dc in move_directions:
             new_row, new_col = row + dr, col + dc
             move = None
-            if 0 < new_row <= self.board_size and 0 < new_col <= self.board_size:
+            if 0 <= new_row < self.board_size and 0 <= new_col < self.board_size:
                 if self.board[new_row][new_col] == 0: # empty
                     move = MoveOp([row, col], [new_row, new_col], 1)
-                elif self.board[new_row][new_col] in hostile and 0 < (new_row + dr) <= self.board_size and 0 < (new_col + dc) <= self.board_size and self.board[new_row + dr][new_col + dc] == 0:
+                elif self.board[new_row][new_col] in hostile and 0 <= (new_row + dr) < self.board_size and 0 <= (new_col + dc) < self.board_size and self.board[new_row + dr][new_col + dc] == 0:
                     if self.board[new_row][new_col] == hostile[0]: # piece cap
                         move = MoveOp([row, col], [new_row + dr, new_col + dc], 4, [new_row, new_col])
                     else: # queen cap
                         move = MoveOp([row, col], [new_row + dr, new_col + dc], 12, [new_row, new_col])
                 
             if move is not None:
-                if move.target[1] == 1 or move.target[1] == 8: move.score += 2 # sides
-                elif (side == 1 and move.target[0] == 1) or (side == -1 and move.target[0] == 8): # get queen
+                if move.target[1] == 0 or move.target[1] == (self.board_size-1):
+                    move.score += 2 # sides
+                elif (side == 1 and move.target[0] == 0) or (side == -1 and move.target[0] == (self.board_size-1)): # get queen
                     move.score += 10 
                     move.mutation = True
                 valid_moves.append(move)
@@ -65,12 +67,14 @@ class Checkerboard:
         return valid_moves
     
     def get_queen_moves(self, row, col):
+        print(f"Row = {row}, Col = {col}")
         valid_moves = []
-        hostile = [1, 2]  # for 3-4 (black)
-        side = 1  # for 3-4 (black)
-        if self.board[row, col] == 1:
+        hostile = [3,4] # for 1-2 (white)
+        side = 1 # for 1-2 (white)
+        if self.board[row, col] == 4:
             side = -1
-            hostile = [3, 4]
+            hostile = [1,2]
+
         move_directions = [(1 * side, -1), (1 * side, 1), (-1 * side, -1), (-1 * side, 1)]
 
         for dr, dc in move_directions:
@@ -78,10 +82,10 @@ class Checkerboard:
             while True:
                 new_row, new_col = current_row + dr, current_col + dc
                 move = None
-                if 0 < new_row <= self.board_size and 0 < new_col <= self.board_size:
+                if 0 <= new_row < self.board_size and 0 <= new_col < self.board_size:
                     if self.board[new_row][new_col] == 0: # empty
                         move = MoveOp([row, col], [new_row, new_col], 1)
-                    elif self.board[new_row][new_col] in hostile and 0 < (new_row + dr) <= self.board_size and 0 < (new_col + dc) <= self.board_size and self.board[new_row + dr][new_col + dc] == 0:
+                    elif self.board[new_row][new_col] in hostile and 0 <= (new_row + dr) < self.board_size and 0 <= (new_col + dc) < self.board_size and self.board[new_row + dr][new_col + dc] == 0:
                         if self.board[new_row][new_col] == hostile[0]:  # piece cap
                             move = MoveOp([row, col], [new_row + dr, new_col + dc], 3, [new_row, new_col])
                         else: # queen cap
@@ -92,7 +96,7 @@ class Checkerboard:
 
                 current_row, current_col = new_row, new_col
                 if move is not None:
-                    if move.target[1] == 1 or move.target[1] == 8 or move.target[0] == 1 or move.target[0] == 8: move.score += 3 # borders
+                    if move.target[1] == 0 or move.target[1] == (self.board_size-1) or move.target[0] == 0 or move.target[0] == (self.board_size-1): move.score += 3 # borders
                     valid_moves.append(move)
 
         return valid_moves
@@ -101,6 +105,7 @@ class Checkerboard:
         print(f"White: {self.white}")
         print(f"Black: {self.black}")
         for row in self.board:
+            print()
             for cell in row:
                 print(cell, end =" ")
 
