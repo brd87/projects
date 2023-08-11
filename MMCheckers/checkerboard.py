@@ -19,12 +19,14 @@ class Checkerboard:
                     self.board[row][col] = 3
                     self.black += 1
 
-    def victory_condition(self):
+    def victory_condition(self, file):
         if self.white == 0 or (self.turn == self.turn_limit and self.black > self.white):
             print("Black is victorius!")
+            file.write("\nBlack Won")
             return True
         if self.black == 0 or (self.turn == self.turn_limit and self.white > self.black):
             print("White is victorius!")
+            file.write("\nBlack Won")
             return True
         return False
 
@@ -56,7 +58,7 @@ class Checkerboard:
                     move = MoveOp([row, col], [new_row, new_col], 1)
                 elif self.board[new_row][new_col] in hostile and 0 <= (new_row + dr) < self.board_size and 0 <= (new_col + dc) < self.board_size and self.board[new_row + dr][new_col + dc] == 0:
                     if self.board[new_row][new_col] == hostile[0]: # piece cap
-                        move = MoveOp([row, col], [new_row + dr, new_col + dc], 4, [new_row, new_col])
+                        move = MoveOp([row, col], [new_row + dr, new_col + dc], 5, [new_row, new_col])
                     else: # queen cap
                         move = MoveOp([row, col], [new_row + dr, new_col + dc], 12, [new_row, new_col])
                 
@@ -90,7 +92,7 @@ class Checkerboard:
                         move = MoveOp([row, col], [new_row, new_col], 1)
                     elif self.board[new_row][new_col] in hostile and 0 <= (new_row + dr) < self.board_size and 0 <= (new_col + dc) < self.board_size and self.board[new_row + dr][new_col + dc] == 0:
                         if self.board[new_row][new_col] == hostile[0]:  # piece cap
-                            move = MoveOp([row, col], [new_row + dr, new_col + dc], 3, [new_row, new_col])
+                            move = MoveOp([row, col], [new_row + dr, new_col + dc], 4, [new_row, new_col])
                         else: # queen cap
                             move = MoveOp([row, col], [new_row + dr, new_col + dc], 10, [new_row, new_col])
                         #break
