@@ -35,7 +35,6 @@ class Checkerboard:
             self.board[move.hostile[0]][move.hostile[1]] = 0
 
     def get_piece_moves(self, row, col):
-        print(f"Row = {row}, Col = {col}")
         valid_moves = []
         hostile = [3,4] # for 1-2 (white)
         side = 1 # for 1-2 (white)
@@ -67,7 +66,6 @@ class Checkerboard:
         return valid_moves
     
     def get_queen_moves(self, row, col):
-        print(f"Row = {row}, Col = {col}")
         valid_moves = []
         hostile = [3,4] # for 1-2 (white)
         side = 1 # for 1-2 (white)
@@ -101,13 +99,21 @@ class Checkerboard:
 
         return valid_moves
 
+    def copy_cb(self):
+        new_board = Checkerboard()
+        new_board.black, new_board.white = self.black, self.white
+        new_board.board_size = self.board_size
+        new_board.board = np.copy(self.board)
+        return new_board
+
     def print_board(self):
         print(f"White: {self.white}")
-        print(f"Black: {self.black}")
+        print(f"Black: {self.black}", end="")
         for row in self.board:
             print()
             for cell in row:
-                print(cell, end =" ")
+                print(cell, end=" ")
+        print()
 
 #check=Checkerboard()
 #check.print_board()
