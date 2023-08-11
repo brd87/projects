@@ -10,6 +10,8 @@ class Checkerboard:
     def __init__(self):
         self.white = 0
         self.black = 0
+        self.turn = 1
+        self.turn_limit = 60
         self.board_size = 8
         self.board = np.zeros((self.board_size, self.board_size), dtype=int)
         for row in range(self.board_size):
@@ -22,10 +24,13 @@ class Checkerboard:
                     self.black += 1
 
     def victory_condition(self):
-        if self.white == 0:
+        if self.white == 0 or (self.turn == self.turn_limit and self.black > self.white):
             print("Black is victorius!")
-        if self.black == 0:
+            return True
+        if self.black == 0 or (self.turn == self.turn_limit and self.white > self.black):
             print("White is victorius!")
+            return True
+        return False
 
     def perform_move(self, move: MoveOp):
         self.board[move.source[0]][move.source[1]], self.board[move.target[0]][move.target[1]] = 0, self.board[move.source[0]][move.source[1]]
