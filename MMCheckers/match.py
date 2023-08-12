@@ -1,4 +1,5 @@
 import math
+import random
 
 from checkerboard import Checkerboard
 from moveop import MoveOp
@@ -66,7 +67,8 @@ class Match:
         for move in moves:
             new_board = self.simulate(arena, move)
             score = (move.score * side) + self.minmax(diff-1, new_board, -side)[0]
-            if (score >= best_score and side == 1) or (score <= best_score and side == -1):
+            rbool = bool(random.getrandbits(1))
+            if (score > best_score and side == 1) or (score < best_score and side == -1) or (score == best_score and rbool == True):
                 best_score, best_move = score, move
 
         return best_score, best_move

@@ -95,7 +95,7 @@ class Checkerboard:
                             move = MoveOp([row, col], [new_row + dr, new_col + dc], 4, [new_row, new_col])
                         else: # queen cap
                             move = MoveOp([row, col], [new_row + dr, new_col + dc], 10, [new_row, new_col])
-                        #break
+                    break
                 else:
                     break
 
