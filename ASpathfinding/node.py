@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Node:
-    mode: int # 1-wall, 2-start, 3-targets
-    mark: bool = False
+    mode: int # 1-wall, 2-start, 3-target
+    done: bool = False
     source: int = None
     g_cost: int = 0
     h_cost: int = None

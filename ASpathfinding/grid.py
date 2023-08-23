@@ -2,11 +2,16 @@ import random
 
 from node import Node
 
+# better maze?
+# pos[]pos[]
+# better spawning
+
 class Grid:
     def __init__(self, size_x, size_y, set_type, user_grid):
         self.size_x = size_x
         self.size_y = size_y
         self.open = []
+        self.done = []
         if(set_type == True):
             self.auto_set()
         else:
@@ -26,8 +31,8 @@ class Grid:
         self.set_start_and_target()
 
     def set_start_and_target(self):
-        start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1))
-        target_x, target_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1))
+        start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
+        target_x, target_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
 
         self.grid[start_y][start_x] = Node(2)
         self.grid[target_y][target_x] = Node(3)
@@ -40,7 +45,7 @@ class Grid:
     def manual_set(self, user_grid):
         pass
 
-    def cal_neighbours(self, pos):
+    def evaluate(self, pos):
         directions = [[1,0],[0,1],[-1,0],[0,-1]]
         for dir_x, dir_y in directions:
             dir_x += pos[0]
@@ -52,9 +57,10 @@ class Grid:
                     self.grid[dir_x][dir_y].g_cost = self.grid[pos[0]][pos[1]].g_cost + 1
                     self.grid[dir_x][dir_y].source = [pos[0], pos[1]]
                     self.grid[dir_x][dir_y].find_f()
-
-                
-        pass
+                if [dir_x, dir_y] not in self.open and self.grid[dir_x][dir_y].done == False:
+                    self.open.append([dir_x, dir_y])
+        self.open.remove([pos[0], pos[1]])
+        self.grid[pos[0]][pos[1]].done = True
 
     def print_grid(self):
         for row in self.grid:
