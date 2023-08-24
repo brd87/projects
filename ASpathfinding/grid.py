@@ -35,10 +35,7 @@ class Grid:
     def set_start_and_target(self):
         start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
         target_x, target_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
-
-        self.start = [start_x, start_y] # possibily useless
-        self.target = [target_x, target_y] # possibily useless
-
+        self.target = [target_x, target_y]
         self.grid[start_y][start_x] = Node(2)
         self.grid[target_y][target_x] = Node(3)
         self.grid[start_y][start_x].find_h([start_x, start_y], [target_x, target_y])
@@ -69,11 +66,17 @@ class Grid:
                     self.grid[dir_x][dir_y].find_f()
                 if [dir_x, dir_y] not in self.open and self.grid[dir_x][dir_y].done == False:
                     self.open.append([[dir_x, dir_y], self.grid[dir_x][dir_y].f_cost])
-        self.open.remove([pos[0], pos[1]])
+        self.open.pop(0)
         self.grid[pos[0]][pos[1]].done = True
 
     def backtrack(self):
-        pass
+        x, y = self.open[0][0]
+        x, y = self.grid[x][y].source
+        while True:
+            if self.grid[y][x].mode == 2:
+                break
+            self.grid[y][x].mode = 4
+            x, y = self.grid[x][y].source
 
     def print_grid(self):
         for row in self.grid:
@@ -82,5 +85,7 @@ class Grid:
                 print(cell.mode, end=" ")
         print()
 
-test = Grid(10, 10, True, [])
+test = Grid(21, 21, True, [])
+test.print_grid()
+test.a_star()
 test.print_grid()
