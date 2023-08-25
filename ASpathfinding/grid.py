@@ -3,12 +3,13 @@ import random
 from node import Node
 
 # todo:
-# better_maze + better_spawning?
-# pos[]pos[] :: done?
+# better_maze + better_spawning? :: inprogress
+# pos[]pos[] :: done
 # manual_set + gui
 
 class Grid:
     def __init__(self, size_x, size_y, set_type, user_grid):
+        self.directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         self.size_x = size_x
         self.size_y = size_y
         self.open = []
@@ -23,34 +24,40 @@ class Grid:
         for y in range(self.size_y):
             row = []
             for x in range(self.size_x):
-                if x == 0 or y == 0 or x == self.size_x - 1 or y == self.size_y - 1 or (x % 2 == 0 and y % 2 == 0):
-                    mode = 1
-                else:
+                if x == 0 or y == 0 or x == self.size_x - 1 or y == self.size_y - 1:
                     mode = 0
+                else:
+                    mode = 1
                 row.append(Node(mode))
             self.grid.append(row)
+        self.carve_maze(1,1)
         self.set_start_and_target()
+    
+    def carve_maze(self, x, y):
+        self.grid[y][x].mode = 1
+
+        rand_directions = self.directions
+        random.shuffle(rand_directions)
+
+        for dir_x, dir_y in rand_directions:
+            new_x, new_y = x + dir_x, y + dir_y
+            if 0 < new_x < self.size_x - 1 and 0 < new_y < self.size_y - 1 and self.grid[new_y][new_x].mode == 1:
+                self.carve_maze(new_x, new_y)
 
     def set_start_and_target(self):
-        #start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
-        #target_x, target_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
-        ##
-        start_x, start_y = 1, 1
-        target_x, target_y = self.size_x - 2, self.size_x - 4
-        # self.grid[1][6].mode = 1
-        # self.grid[2][5].mode = 1
-        # self.grid[2][3].mode = 1
-        # self.grid[4][1].mode = 1
-        # self.grid[4][3].mode = 1
-        # self.grid[3][6].mode = 1
-        # self.print_grid()
-        ##
+        start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
+        target_x, target_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
         self.target = [target_x, target_y]
         self.grid[start_y][start_x] = Node(2)
         self.grid[target_y][target_x] = Node(3)
         self.grid[start_y][start_x].find_h([start_y, start_x], [target_y, target_x])
         self.grid[start_y][start_x].find_f()
         self.open.append([[start_y, start_x], self.grid[start_y][start_x].f_cost])
+        for dir_x, dir_y in self.directions:
+            if 0 < start_y + dir_y < self.size_y - 1 and 0 < start_x + dir_x < self.size_x - 1:
+                self.grid[start_y + dir_y][start_x + dir_x].mode = 1
+            if 0 < target_y + dir_y < self.size_y - 1 and 0 < target_x + dir_x < self.size_x - 1:
+                self.grid[target_y + dir_y][target_x + dir_x].mode = 1
         
     def manual_set(self, user_grid):
         pass
@@ -59,18 +66,17 @@ class Grid:
         while True:
             self.evaluate(self.open[0][0])
             self.open.sort(key = lambda list : list[-1])
-            if self.grid[self.open[0][0][0]][self.open[0][0][1]].h_cost == 0:
-                print("into")
-                return self.backtrack()
             if len(self.open) == 0:
                 return print("unsolvable")
+            if self.grid[self.open[0][0][0]][self.open[0][0][1]].h_cost == 0:
+                return self.backtrack()
+            
 
     def evaluate(self, pos):
-        directions = [[1,0],[0,1],[-1,0],[0,-1]]
-        for dir_x, dir_y in directions:
+        for dir_x, dir_y in self.directions:
             dir_x += pos[1]
             dir_y += pos[0]
-            if self.grid[dir_y][dir_x].mode != 1:
+            if self.grid[dir_y][dir_x].mode != 0: #here
                 if self.grid[dir_y][dir_x].h_cost is None:
                     self.grid[dir_y][dir_x].find_h([dir_x, dir_y], self.target)
                 if self.grid[dir_y][dir_x].g_cost == 0 or self.grid[dir_y][dir_x].g_cost > self.grid[pos[0]][pos[1]].g_cost + 1:
