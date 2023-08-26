@@ -14,13 +14,8 @@ class Grid:
         self.size_y = size_y
         self.open = []
         self.done = []
-        if(set_type == True):
-            self.auto_set()
-        else:
-            self.manual_set(user_grid)
-
-    def auto_set(self):
         self.grid = []
+
         for y in range(self.size_y):
             row = []
             for x in range(self.size_x):
@@ -30,10 +25,14 @@ class Grid:
                     mode = 1
                 row.append(Node(mode))
             self.grid.append(row)
-        self.carve_maze(1,1)
-        self.set_start_and_target()
-    
-    def carve_maze(self, x, y):
+
+        if(set_type == True):
+            self.auto_set(1, 1)
+            self.set_start_and_target()
+        else:
+            self.manual_set(user_grid)
+
+    def auto_set(self, x, y):
         self.grid[y][x].mode = 1
 
         rand_directions = self.directions
@@ -42,7 +41,8 @@ class Grid:
         for dir_x, dir_y in rand_directions:
             new_x, new_y = x + dir_x, y + dir_y
             if 0 < new_x < self.size_x - 1 and 0 < new_y < self.size_y - 1 and self.grid[new_y][new_x].mode == 1:
-                self.carve_maze(new_x, new_y)
+                self.auto_set(new_x, new_y)
+        
 
     def set_start_and_target(self):
         start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 1, 2)) # cross only atm
@@ -105,7 +105,7 @@ class Grid:
                 print(cell.mode, end=" ")
         print()
 
-test = Grid(21, 21, True, [])
-test.print_grid()
-test.a_star()
-test.print_grid()
+#test = Grid(21, 21, True, [])
+#test.print_grid()
+#test.a_star()
+#test.print_grid()
