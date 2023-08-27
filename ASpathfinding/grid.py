@@ -5,7 +5,7 @@ from node import Node
 # todo:
 # better_maze + better_spawning? :: inprogress
 # pos[]pos[] :: done
-# manual_set + gui
+# manual_set + gui :: inprogress
 
 class Grid:
     def __init__(self, size_x, size_y, c_wall, c_sapce, c_start, c_end, c_path):
