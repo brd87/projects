@@ -3,6 +3,7 @@ from dataclasses import dataclass
 @dataclass
 class Node:
     mode: int # 0-wall, 1-space, 2-start, 3-target
+    color: int = None
     done: bool = False
     source: int = None
     g_cost: int = 0
