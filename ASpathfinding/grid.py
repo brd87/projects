@@ -127,7 +127,7 @@ class Grid:
     def make_tile(self, pos, mode, color):
         if 0 < pos[0] < self.size_y - 1 and 0 < pos[1] < self.size_x - 1:
             self.grid[pos[0]][pos[1]].mode = mode
-            self.grid[pos[0]][pos[1]].solor = color
+            self.grid[pos[0]][pos[1]].color = color
             print("tile changed")
 
 
