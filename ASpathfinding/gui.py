@@ -23,43 +23,53 @@ DISPLAY = pygame.display.set_mode(window_size)
 DISPLAY.fill(c_white)
 pygame.display.set_caption("ASpathfinding")
 
-def draw(window, op_grid):
-    DISPLAY.fill(c_white)
-    for y in range(op_grid.size_y):
-        for x in range(op_grid.size_x):
-            pygame.draw.rect(DISPLAY, op_grid.grid[y][x].color, (x*squere_size, y*squere_size, squere_size, squere_size))
+def draw(window, operation_grid):
+    window.fill(c_white)
+    for y in range(operation_grid.size_y):
+        for x in range(operation_grid.size_x):
+            pygame.draw.rect(DISPLAY, operation_grid.grid[y][x].color, (x*squere_size, y*squere_size, squere_size, squere_size))
     pygame.display.update()
 
 def get_grid_position(click_pos):
     x, y = click_pos
-    pos = x // squere_size, y // squere_size
+    pos = y // squere_size, x // squere_size
     return pos
 
-operation_grid = Grid(xy, xy, c_black, c_white, c_green, c_yellow, c_red)
+
+operation_grid = Grid(xy, xy, c_black, c_white, c_green, c_red, c_yellow)
 user_grid = operation_grid.grid
 while True:
     draw(DISPLAY, operation_grid)
     for event in pygame.event.get():
-        if pygame.mouse.get_pressed()[0]: # left mouse
+        if pygame.mouse.get_pressed()[0]: # left mouse / morph into xyz
             click_pos = pygame.mouse.get_pos()
             print(click_pos)
-            # morph into xyz
+            pos = get_grid_position(click_pos)
+            if operation_grid.grid[pos[0]][pos[1]].mode == 0:
+                operation_grid.make_tile(pos, 2, operation_grid.c_start)
+            if operation_grid.grid[pos[0]][pos[1]].mode == 2:
+                operation_grid.make_tile(pos, 3, operation_grid.c_end)
+            if operation_grid.grid[pos[0]][pos[1]].mode in [1, 3]:
+                operation_grid.make_tile(pos, 0, operation_grid.c_wall)
     
-        if pygame.mouse.get_pressed()[2]: # right mouse
+        if pygame.mouse.get_pressed()[2]: # right mouse / clear
             click_pos = pygame.mouse.get_pos()
             print(click_pos)
-            # clear
+            pos = get_grid_position(click_pos)
+            operation_grid.make_tile(pos, 1, operation_grid.c_sapce)
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and operation_grid is not None: # sapce mouse / preform A*
+            if event.key == pygame.K_SPACE and operation_grid is not None: # sapce / preform A*
                 operation_grid.a_star() 
-            if event.key == pygame.K_LSHIFT: # Lshift mouse / autogenerate grid
+            if event.key == pygame.K_LSHIFT: # Lshift / autogenerate grid
+                if operation_grid.grid != []:
+                    operation_grid.make_new()
                 operation_grid.setting(True, None)
                 #operation_grid.print_grid()
-            if event.key == pygame.K_LCTRL: # Lctrl mouse / load user grid
+            if event.key == pygame.K_LCTRL: # Lctrl / load user grid
                 operation_grid.setting(True, user_grid)
                 pass 
-            if event.key == pygame.K_ESCAPE: # esc mouse / quit key
+            if event.key == pygame.K_ESCAPE: # esc / quit key
                 pygame.quit()
                 sys.exit()
 

@@ -13,7 +13,6 @@ class Grid:
         self.size_x = size_x
         self.size_y = size_y
         self.open = []
-        self.done = []
         self.grid = []
 
         self.c_wall = c_wall
@@ -22,6 +21,11 @@ class Grid:
         self.c_end = c_end
         self.c_path = c_path
 
+        self.make_new()
+
+    def make_new(self):
+        self.open.clear()
+        self.grid.clear()
         for y in range(self.size_y):
             row = []
             for x in range(self.size_x):
@@ -31,7 +35,6 @@ class Grid:
                     mode, color = 1, self.c_sapce
                 row.append(Node(mode, color))
             self.grid.append(row)
-
 
     def setting(self, set_type, user_grid ):
         if(set_type == True):
@@ -119,6 +122,14 @@ class Grid:
             self.grid[y][x].color = self.c_path
             #self.print_grid()
             y, x = self.grid[y][x].source
+
+
+    def make_tile(self, pos, mode, color):
+        if 0 < pos[0] < self.size_y - 1 and 0 < pos[1] < self.size_x - 1:
+            self.grid[pos[0]][pos[1]].mode = mode
+            self.grid[pos[0]][pos[1]].solor = color
+            print("tile changed")
+
 
     def print_grid(self):
         for row in self.grid:
