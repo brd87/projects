@@ -2,11 +2,6 @@ import random
 
 from node import Node
 
-# todo:
-# better_maze + better_spawning? :: inprogress
-# pos[]pos[] :: done
-# manual_set + gui :: inprogress
-
 class Grid:
     def __init__(self, size_x, size_y, c_wall, c_sapce, c_start, c_end, c_path):
         self.directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -14,18 +9,23 @@ class Grid:
         self.size_y = size_y
         self.open = []
         self.grid = []
-
+        self.start_node = False
+        self.target_node = False
         self.c_wall = c_wall
         self.c_sapce = c_sapce
         self.c_start = c_start
         self.c_end = c_end
         self.c_path = c_path
-
         self.make_new()
+
 
     def make_new(self):
         self.open.clear()
         self.grid.clear()
+        self.start_node = False
+        self.target_node = False
+        self.target = None
+        self.start = None
         for y in range(self.size_y):
             row = []
             for x in range(self.size_x):
@@ -36,12 +36,14 @@ class Grid:
                 row.append(Node(mode, color))
             self.grid.append(row)
 
-    def setting(self, set_type, user_grid ):
-        if(set_type == True):
-            self.auto_set(1, 1)
-            self.set_start_and_target()
-        else:
-            self.manual_set(user_grid)
+
+    def set(self):
+        self.auto_set(1, 1)
+        self.set_start_and_target()
+
+
+    def random_cords(self):
+        return random.choice(range(1, self.size_y - 1, 2)), random.choice(range(1, self.size_x - 2))
 
 
     def auto_set(self, x, y):
@@ -61,16 +63,16 @@ class Grid:
         
 
     def set_start_and_target(self):
-        start_x, start_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 2))
-        target_x, target_y = random.choice(range(1, self.size_x - 1, 2)), random.choice(range(1, self.size_y - 2))
+        start_y, start_x = self.random_cords()
+        target_y, target_x = self.random_cords()
 
-        self.target = [target_x, target_y]
+        self.start = [start_y, start_x]
+        self.target = [target_y, target_x]
+        self.start_node = True
+        self.target_node = True
 
         self.grid[start_y][start_x] = Node(2, self.c_start)
         self.grid[target_y][target_x] = Node(3, self.c_end)
-        self.grid[start_y][start_x].find_h([start_y, start_x], [target_y, target_x])
-        self.grid[start_y][start_x].find_f()
-        self.open.append([[start_y, start_x], self.grid[start_y][start_x].f_cost])
 
         for dir_x, dir_y in self.directions:
             if 0 < start_y + dir_y < self.size_y - 1 and 0 < start_x + dir_x < self.size_x - 1:
@@ -79,21 +81,25 @@ class Grid:
             if 0 < target_y + dir_y < self.size_y - 1 and 0 < target_x + dir_x < self.size_x - 1:
                 self.grid[target_y + dir_y][target_x + dir_x].mode = 1
                 self.grid[target_y + dir_y][target_x + dir_x].color = self.c_sapce
-        
-
-    def manual_set(self, user_grid):
-        pass
 
 
     def a_star(self):
+        self.grid[self.start[0]][self.start[1]].find_h(self.start, self.target) #here
+        self.grid[self.start[0]][self.start[1]].find_f()
+        self.open.append([self.start, self.grid[self.start[0]][self.start[1]].f_cost])
+        solved = True
         while True:
             self.evaluate(self.open[0][0])
             self.open.sort(key = lambda list : list[-1])
             if len(self.open) == 0:
-                return print("unsolvable")
+                solved = False
+                break
             if self.grid[self.open[0][0][0]][self.open[0][0][1]].h_cost == 0:
-                return self.backtrack()
-            
+                self.backtrack()
+                break
+        self.grid[self.start[0]][self.start[1]].color = self.c_start
+        return solved
+
 
     def evaluate(self, pos):
         for dir_x, dir_y in self.directions:
@@ -101,7 +107,7 @@ class Grid:
             dir_y += pos[0]
             if self.grid[dir_y][dir_x].mode != 0: #here
                 if self.grid[dir_y][dir_x].h_cost is None:
-                    self.grid[dir_y][dir_x].find_h([dir_x, dir_y], self.target)
+                    self.grid[dir_y][dir_x].find_h([dir_y, dir_x], self.target) #here
                 if self.grid[dir_y][dir_x].g_cost == 0 or self.grid[dir_y][dir_x].g_cost > self.grid[pos[0]][pos[1]].g_cost + 1:
                     self.grid[dir_y][dir_x].g_cost = self.grid[pos[0]][pos[1]].g_cost + 1
                     self.grid[dir_y][dir_x].source = pos
@@ -110,6 +116,7 @@ class Grid:
                     self.open.append([[dir_y, dir_x], self.grid[dir_y][dir_x].f_cost])
         self.open.pop(0)
         self.grid[pos[0]][pos[1]].done = True
+        self.grid[pos[0]][pos[1]].color = (255, 165, 0)
 
 
     def backtrack(self):
@@ -120,31 +127,21 @@ class Grid:
                 break
             self.grid[y][x].mode = 4
             self.grid[y][x].color = self.c_path
-            #self.print_grid()
             y, x = self.grid[y][x].source
-
+        
 
     def make_tile(self, pos, mode, color):
         if 0 < pos[0] < self.size_y - 1 and 0 < pos[1] < self.size_x - 1:
+            if self.grid[pos[0]][pos[1]].mode == 2:
+                self.start_node = False
+            if self.grid[pos[0]][pos[1]].mode == 3:
+                self.target_node = False
             self.grid[pos[0]][pos[1]].mode = mode
             self.grid[pos[0]][pos[1]].color = color
-            print("tile changed")
-
-
-    def print_grid(self):
-        for row in self.grid:
-            print()
-            for cell in row:
-                print(cell.mode, end=" ")
-        print()
-
-# c_black = (0, 0, 0) # 0-wall
-# c_white = (255, 255, 255) # 1-space
-# c_green = (0, 255, 0) # 2-start
-# c_red = (255, 0, 0) # 3-target
-# c_yellow = (255, 255, 0) # 4-path
-# test = Grid(22, 22, c_black, c_white, c_green, c_red, c_yellow)
-# test.setting(True, None)
-# test.print_grid()
-# test.a_star()
-# test.print_grid()
+            if self.grid[pos[0]][pos[1]].mode == 2:
+                self.open.clear()
+                self.start = pos
+                self.start_node = True
+            if self.grid[pos[0]][pos[1]].mode == 3:
+                self.target = pos
+                self.target_node = True
