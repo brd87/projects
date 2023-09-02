@@ -5,11 +5,11 @@ from number import Number
 from layer import Layer
 
 class DataHandler:
-    def __init__(self, is_WAB, filename, hidden_num):
+    def __init__(self, is_WAB, filename, hidden_neuron, hidden_num):
         WAB = None
         if is_WAB:
             WAB = self.load_WAB(filename)
-        self.network = Network(WAB, hidden_num)
+        self.network = Network(WAB, hidden_neuron, hidden_num)
 
 
     def train_setup(self, mini_batch, epochs, learning_rate, data_range):
