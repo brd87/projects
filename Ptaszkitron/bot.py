@@ -49,10 +49,7 @@ async def send(ctx, animal):
 async def find(ctx, word):
     print(ctx.message.channel.id)
     from_channel = client.get_channel(ctx.message.channel.id)
-    messages = []
     async for msg in from_channel.history(limit=200):
-        messages.append(msg)
-    if messages:
-        print(messages[-1].jump_url)
-        await ctx.send(f'Url for the first channel message: {str(messages[0].jump_url)}')
+        if word in msg.content:
+            await ctx.send(f'**Url for the message:** {msg.jump_url}\n**Message:** {msg.author} - "{msg.content}"')
 client.run(TOKEN)
