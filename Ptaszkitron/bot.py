@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-
 TOKEN = 'token here'
 
 intents = discord.Intents.default()
@@ -38,12 +37,22 @@ async def ping(ctx):
     await ctx.send(f'Ping: {round(client.latency * 1000)}ms')
 
 @client.command(name='send')
-async def ping(ctx, arg):
-    if arg == 'cat':
+async def send(ctx, animal):
+    if animal == 'cat':
         await ctx.message.add_reaction('🐈')
         await ctx.send(f'here\'s cat', file=discord.File('send_cat.jpg'))
-    if arg == 'dog':
+    if animal == 'dog':
         await ctx.message.add_reaction('🐕')
         await ctx.send(f'here\'s dog', file=discord.File('send_dog.jpg'))
 
+@client.command(name='find')
+async def find(ctx, word):
+    print(ctx.message.channel.id)
+    from_channel = client.get_channel(ctx.message.channel.id)
+    messages = []
+    async for msg in from_channel.history(limit=200):
+        messages.append(msg)
+    if messages:
+        print(messages[-1].jump_url)
+        await ctx.send(f'Url for the first channel message: {str(messages[0].jump_url)}')
 client.run(TOKEN)
