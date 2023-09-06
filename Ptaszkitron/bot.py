@@ -46,10 +46,15 @@ async def send(ctx, animal):
         await ctx.send(f'here\'s dog', file=discord.File('send_dog.jpg'))
 
 @client.command(name='find')
-async def find(ctx, word):
-    print(ctx.message.channel.id)
+async def find(ctx, word, author):
+    print(author)
     from_channel = client.get_channel(ctx.message.channel.id)
+    first = True
     async for msg in from_channel.history(limit=200):
-        if word in msg.content:
+        if first == True:
+            first = False
+            continue
+        if msg.author.mention == author and word in msg.content and first == False and not (msg.author == client.user and 'Url for the message' in msg.content):
             await ctx.send(f'**Url for the message:** {msg.jump_url}\n**Message:** {msg.author} - "{msg.content}"')
+
 client.run(TOKEN)
