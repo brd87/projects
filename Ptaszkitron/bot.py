@@ -31,6 +31,7 @@ async def on_message(message):
         await message.channel.send('hi human')
     if message.content.startswith('dm me bot'):
         await message.author.send('hello there :D')
+    
 
 @client.command(name='ping')
 async def ping(ctx):
@@ -62,13 +63,18 @@ async def find(ctx, word, author=None):
 async def get_msg(ctx, author, channel=None):
     print(channel)
     if channel == None:
-        from_base = client.get_all_channels()
+        from_base = ctx.guild.text_channels
+        with open(author.strip('<@>')+'.txt', 'w', encoding='utf-8') as file:
+            for channel in from_base:
+                async for msg in channel.history():
+                    if msg.author.mention == author and msg.content is not '':
+                        file.write(msg.content+'\n<:>SPACE<:>\n')
     else:
         from_base = client.get_channel(int(channel.strip('<#>')))
-    with open(author.strip('<@>')+'.txt', 'w', encoding='utf-8') as file:
-        async for msg in from_base.history():
-            if msg.author.mention == author:
-                file.write(msg.content+'\n<:>SPACE<:>\n')
+        with open(author.strip('<@>')+'.txt', 'w', encoding='utf-8') as file:
+            async for msg in from_base.history():
+                if msg.author.mention == author:
+                    file.write(msg.content+'\n<:>SPACE<:>\n')
     await ctx.send('Done!')
 
 
