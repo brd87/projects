@@ -86,10 +86,10 @@ async def get_msg(ctx, author, channel=None):
     await ctx.send('Done!')
 
 
-@client.command(name='simulate')
+@client.command(name='startsim')
 async def simulate(ctx, author):
     if os.path.exists(author.strip('<@>')+'.txt'):
-        with open(author.strip('<@>')+'.txt', 'r') as file:
+        with open(author.strip('<@>')+'.txt', 'r', encoding='utf-8') as file:
             author_database = []
             message = ''
             for line in file:
@@ -98,9 +98,16 @@ async def simulate(ctx, author):
                     message = ''
                     continue
                 message += line
-        ctx.send('Simulation ready!')
+        await ctx.send('Simulation ready!')
         while True:
-            pass
+            user_message = await ctx.bot.wait_for('message', timeout=180)
+            if user_message.content == '.stopsim':
+                await ctx.send('Simulation stopped!')
+                break
+            else:
+                response_msg = find_response(user_message.content, author_database)
+                if response_msg is not None:
+                    await ctx.send(response_msg)
     else:
         await ctx.send('I have no database for this user :(')
 
@@ -123,5 +130,19 @@ async def play(ctx, url):
             ctx.voice_client.play(FFmpegPCMAudio(executable='C:/FFmpeg/bin/ffmpeg.exe', source='play_frog.mp3'))
         else:
             pass
+
+
+def find_response(user_message, author_database):
+    response_msg = None
+    max = 0
+    user_message = user_message.lower().strip(',.:/').split(' ')
+    for msg in author_database:
+        check_msg = msg.lower().strip(',.:/').split(' ')
+        common_words = set(user_message).intersection(check_msg)
+        current = len(common_words)
+        if current >= max:
+            response_msg = msg
+            max = current
+    return response_msg
 
 client.run(TOKEN)
