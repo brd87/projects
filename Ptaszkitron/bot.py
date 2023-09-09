@@ -1,5 +1,8 @@
+import os
 import discord
+import youtube_dl
 from discord.ext import commands
+from discord import FFmpegPCMAudio
 
 TOKEN = 'token here'
 
@@ -12,15 +15,18 @@ client = commands.Bot(command_prefix='.', intents=intents)
 
 @client.event 
 async def on_ready():
-    print(f'Bot is ready. {client.user}')
+    print(f'Bot is ready. ({client.user})')
+
 
 @client.event
 async def on_member_join(member):
     print(f'{member} has joined a server.')
 
+
 @client.event
 async def on_member_remove(member):
     print(f'{member} has left a server.')
+
 
 @client.listen('on_message')
 async def on_message(message):
@@ -37,6 +43,7 @@ async def on_message(message):
 async def ping(ctx):
     await ctx.send(f'Ping: {round(client.latency * 1000)}ms')
 
+
 @client.command(name='send')
 async def send(ctx, animal):
     if animal == 'cat':
@@ -45,6 +52,7 @@ async def send(ctx, animal):
     if animal == 'dog':
         await ctx.message.add_reaction('🐕')
         await ctx.send(f'here\'s dog', file=discord.File('send_dog.jpg'))
+
 
 @client.command(name='find')
 async def find(ctx, word, author=None):
@@ -59,9 +67,9 @@ async def find(ctx, word, author=None):
         if word in msg.content and first == False and not (msg.author == client.user and 'Url for the message' in msg.content):
             await ctx.send(f'**Url for the message:** {msg.jump_url}\n**Message:** {msg.author} - "{msg.content}"')
 
+
 @client.command(name='getmsg')
 async def get_msg(ctx, author, channel=None):
-    print(channel)
     if channel == None:
         from_base = ctx.guild.text_channels
         with open(author.strip('<@>')+'.txt', 'w', encoding='utf-8') as file:
@@ -78,5 +86,42 @@ async def get_msg(ctx, author, channel=None):
     await ctx.send('Done!')
 
 
+@client.command(name='simulate')
+async def simulate(ctx, author):
+    if os.path.exists(author.strip('<@>')+'.txt'):
+        with open(author.strip('<@>')+'.txt', 'r') as file:
+            author_database = []
+            message = ''
+            for line in file:
+                if line == '<:>SPACE<:>':
+                    author_database.append(message)
+                    message = ''
+                    continue
+                message += line
+        ctx.send('Simulation ready!')
+        while True:
+            pass
+    else:
+        await ctx.send('I have no database for this user :(')
+
+
+@client.command(name='join')
+async def join(ctx):
+    await ctx.author.voice.channel.connect()
+
+
+@client.command(name='leave')
+async def leave(ctx):
+    await ctx.voice_client.disconnect()
+
+
+@client.command(name='play')
+async def play(ctx, url):
+    if ctx.voice_client:
+        if url == 'frog':
+            ctx.voice_client.stop()
+            ctx.voice_client.play(FFmpegPCMAudio(executable='C:/FFmpeg/bin/ffmpeg.exe', source='play_frog.mp3'))
+        else:
+            pass
 
 client.run(TOKEN)
