@@ -10,8 +10,9 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-client = discord.Client(activity=discord.Activity(name='Lives in computer'), intents=intents)
-client = commands.Bot(command_prefix='.', intents=intents)
+#client = discord.Client(activity=discord.Activity(name='Lives in computer'), intents=intents)
+client = commands.Bot(command_prefix='/', intents=intents)
+#FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
 @client.event 
 async def on_ready():
@@ -39,12 +40,12 @@ async def on_message(message):
         await message.author.send('hello there :D')
     
 
-@client.command(name='ping')
+@client.command(name='ping', help='Displayes latency.')
 async def ping(ctx):
     await ctx.send(f'Ping: {round(client.latency * 1000)}ms')
 
 
-@client.command(name='send')
+@client.command(name='send', help='Sends image from database.')
 async def send(ctx, animal):
     if animal == 'cat':
         await ctx.message.add_reaction('🐈')
@@ -54,7 +55,7 @@ async def send(ctx, animal):
         await ctx.send(f'here\'s dog', file=discord.File('send_dog.jpg'))
 
 
-@client.command(name='find')
+@client.command(name='find', help='Finds messages with a given words.')
 async def find(ctx, word, author=None):
     from_channel = client.get_channel(ctx.message.channel.id)
     first = True
@@ -68,7 +69,7 @@ async def find(ctx, word, author=None):
             await ctx.send(f'**Url for the message:** {msg.jump_url}\n**Message:** {msg.author} - "{msg.content}"')
 
 
-@client.command(name='getmsg')
+@client.command(name='getmsg', help='Downloads messages of a given user.')
 async def get_msg(ctx, author, channel=None):
     if channel == None:
         from_base = ctx.guild.text_channels
@@ -86,19 +87,19 @@ async def get_msg(ctx, author, channel=None):
     await ctx.send('Done!')
 
 
-@client.command(name='startsim')
+@client.command(name='startsim', help='Mimics given user if they exist in database.')
 async def simulate(ctx, author):
     if os.path.exists(author.strip('<@>')+'.txt'):
         with open(author.strip('<@>')+'.txt', 'r', encoding='utf-8') as file:
             author_database = []
             message = ''
             for line in file:
-                if line == '<:>SPACE<:>':
+                if line == '<:>SPACE<:>\n':
                     author_database.append(message)
                     message = ''
                     continue
                 message += line
-        await ctx.send('Simulation ready!')
+        await ctx.send(f'Simulation ready!\nI have {len(author_database)} to choose from :D')
         while True:
             user_message = await ctx.bot.wait_for('message', timeout=180)
             if user_message.content == '.stopsim':
@@ -112,24 +113,25 @@ async def simulate(ctx, author):
         await ctx.send('I have no database for this user :(')
 
 
-@client.command(name='join')
+@client.command(name='join', help='Joins the user voice channel.')
 async def join(ctx):
     await ctx.author.voice.channel.connect()
 
 
-@client.command(name='leave')
+@client.command(name='leave', help='Leaves the voice channel.')
 async def leave(ctx):
     await ctx.voice_client.disconnect()
 
 
-@client.command(name='play')
+@client.command(name='play', help='Playes given music/sound.')
 async def play(ctx, url):
     if ctx.voice_client:
         if url == 'frog':
             ctx.voice_client.stop()
             ctx.voice_client.play(FFmpegPCMAudio(executable='C:/FFmpeg/bin/ffmpeg.exe', source='play_frog.mp3'))
         else:
-            pass
+            ctx.voice_client.stop()
+            ctx.voice_client.play(FFmpegPCMAudio(executable='C:/FFmpeg/bin/ffmpeg.exe', source=url))
 
 
 def find_response(user_message, author_database):
