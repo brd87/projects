@@ -1,10 +1,12 @@
 import os
 import discord
 import youtube_dl
+import random
 from discord.ext import commands
 from discord import FFmpegPCMAudio
 
 TOKEN = 'token here'
+
 
 intents = discord.Intents.default()
 intents.members = True
@@ -88,7 +90,9 @@ async def get_msg(ctx, author, channel=None):
 
 
 @client.command(name='startsim', help='Mimics given user if they exist in database.')
-async def simulate(ctx, author):
+async def simulate(ctx, author=None):
+    if author == None:
+        author = 'mimic'
     if os.path.exists(author.strip('<@>')+'.txt'):
         with open(author.strip('<@>')+'.txt', 'r', encoding='utf-8') as file:
             author_database = []
@@ -99,10 +103,10 @@ async def simulate(ctx, author):
                     message = ''
                     continue
                 message += line
-        await ctx.send(f'Simulation ready!\nI have {len(author_database)} to choose from :D')
+        await ctx.send(f'Simulation ready!\nI have {len(author_database)} messages to choose from :D')
         while True:
             user_message = await ctx.bot.wait_for('message', timeout=180)
-            if user_message.content == '.stopsim':
+            if user_message.content == '/stopsim':
                 await ctx.send('Simulation stopped!')
                 break
             else:
@@ -137,12 +141,17 @@ async def play(ctx, url):
 def find_response(user_message, author_database):
     response_msg = None
     max = 0
-    user_message = user_message.lower().strip(',.:/').split(' ')
+    question = False
+    if '?' in user_message:
+        question = True
+    user_message = user_message.lower().strip(',.:/?').split(' ')
     for msg in author_database:
-        check_msg = msg.lower().strip(',.:/').split(' ')
+        if question and '?' in msg:
+            continue
+        check_msg = msg.lower().strip(',.:/?').split(' ')
         common_words = set(user_message).intersection(check_msg)
         current = len(common_words)
-        if current >= max:
+        if current > max or (current == max and random.randint(0,1) == 0):
             response_msg = msg
             max = current
     return response_msg
