@@ -24,15 +24,20 @@ class Player:
             self.acc.x = -self.f_acc
         if pressed_keys[K_RIGHT]:
             self.acc.x = self.f_acc
-
         self.acc.x += self.vel.x * self.f_fric
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
 
-        if self.pos.x > self.border:
-            self.pos.x = 0
-        if self.pos.x < 0:
-            self.pos.x = self.border
+        if self.pos.x > self.border or self.pos.x < 0:
+            self.vel.x = -self.vel.x*2
             
         self.rect.midbottom = self.pos
 
+
+    def jump(self):
+        self.vel.y = -12
+
+
+    def player_hit(self, hit):
+        self.pos.y = hit.rect.top + 1
+        self.vel.y = 0
