@@ -15,6 +15,7 @@ class Player:
         self.pos = vec((WIDTH/2, HEIGHT-40))
         self.vel = vec(0,0)
         self.acc = vec(0,0)
+        self.if_jump = False
 
 
     def move(self):
@@ -34,10 +35,18 @@ class Player:
         self.rect.midbottom = self.pos
 
 
-    def jump(self):
-        self.vel.y = -12
+    def jump(self, power):
+        self.if_jump = True
+        self.vel.y = -power
 
+    def kill_jump(self, power):
+        self.if_jump = False
+        self.vel.y += power
 
     def player_hit(self, hit):
-        self.pos.y = hit.rect.top + 1
-        self.vel.y = 0
+        if self.pos.y < hit.rect.bottom:
+            self.if_jump = False
+            self.pos.y = hit.rect.top + 1
+            self.vel.y = 0
+        else:
+            self.vel.y = -6
