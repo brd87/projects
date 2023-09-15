@@ -16,6 +16,7 @@ class Player:
         self.vel = vec(0,0)
         self.acc = vec(0,0)
         self.if_jump = False
+        self.score = 0
 
 
     def move(self):

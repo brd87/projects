@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 from pygame.locals import *
 
 from player import Player
@@ -9,7 +10,7 @@ from tile import Tile
 pygame.init()
 
 WIDTH = 500
-HEIGHT = 800
+HEIGHT = 842
 window_size = (WIDTH, HEIGHT)
 
 c_black = (0, 0, 0)
@@ -30,8 +31,11 @@ JUMP_K = 5
 PLAT_G_color = c_white
 PLAT_B_color = c_red
 PLAT_J_color = c_yellow
+PLAT_B_damage = 1
+PLAT_J_multi = 2
 PLAYER_color = c_gray
-
+PLAYER_health = 100
+PLAYER_score = 0
 
 
 FPS = 60
@@ -42,7 +46,8 @@ pygame.display.set_caption("PGplatformer")
 
 
 def generate_tile(color):
-    return Tile(random.randint(50,100), 12, random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), color)
+    return Tile(random.randint(50,100), 12, random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), color, WIDTH)
+
 
 def check_tile(entities, target):
     if pygame.sprite.spritecollide(target, entities, False):
@@ -53,6 +58,7 @@ def check_tile(entities, target):
         if abs(target.rect.top - entity.rect.bottom) < 50 and abs(target.rect.bottom - entity.rect.top) < 50:
             return True
     return False
+
 
 def generate_level(entities, amount, color, if_first_gen):
     while len(entities) < amount:
@@ -71,10 +77,24 @@ def draw(entities_group, player):
     for entities in entities_group:
         for entity in entities:
             DISPLAY.blit(entity.surf, entity.rect)
-    
+            entity.move()
+    draw_stats()
+
+
+def draw_stats():
+    text = pygame.font.SysFont("impact", 20)
+    text_score = text.render(str(player.score), True, c_black)
+    text_health = text.render(f"Heath: {PLAYER_health}%", True, c_black)
+    pygame.draw.line(DISPLAY, c_white, (0, 20), (WIDTH, 20), 40)
+    pygame.draw.line(DISPLAY, c_gray, (0, 41), (WIDTH, 41), 1)
+    pygame.draw.line(DISPLAY, c_gray, (0, 0), (WIDTH, 0), 1)
+    DISPLAY.blit(text_score, (WIDTH/4*3, 5))
+    DISPLAY.blit(text_health, (0, 5))
+
+
 def draw_cross():
-    pygame.draw.line(DISPLAY, PLAT_B_color, (0, 0), window_size, 20)
-    pygame.draw.line(DISPLAY, PLAT_B_color, (window_size[0], 0), (0, window_size[1]), 20)
+    pygame.draw.line(DISPLAY, PLAT_B_color, (0, 42), window_size, 20)
+    pygame.draw.line(DISPLAY, PLAT_B_color, (window_size[0], 42), (0, window_size[1]), 20)
 
 
 def update(entities, player):
@@ -100,17 +120,19 @@ def update_ent(entities, target, color, amount):
 
 
 player = Player(WIDTH, HEIGHT, PLAYER_color, ACC, FRIC)
-start_plat = Tile(WIDTH, 20, WIDTH/2, HEIGHT-10, PLAT_G_color)
-g_plat = Tile(WIDTH/4, 20, WIDTH/2, HEIGHT-100, PLAT_G_color)
+start_tile = Tile(WIDTH, 20, WIDTH/2, HEIGHT-10, PLAT_G_color, WIDTH)
+start_tile.if_move = False
+g_tile = Tile(WIDTH/4, 20, WIDTH/2, HEIGHT-100, PLAT_G_color, WIDTH)
 
 good_entities = []
-good_entities.append(start_plat)
-good_entities.append(g_plat)
+good_entities.append(start_tile)
+good_entities.append(g_tile)
 good_entities = generate_level(good_entities, PLAT_G+1, PLAT_G_color, True)
 bad_entities = []
 bad_entities = generate_level(bad_entities, PLAT_B+1, PLAT_B_color, True)
 jump_entities = []
 jump_entities = generate_level(jump_entities, PLAT_J+1, PLAT_J_color, True)
+
 
 while True:
     draw((good_entities, bad_entities, jump_entities), player)
@@ -119,10 +141,23 @@ while True:
     player.move()
     if if_collision(bad_entities, player): # damage
         draw_cross()
+        PLAYER_health -= PLAT_B_damage
     if if_collision(jump_entities, player): # turbo jump
-        player.jump(JUMP_P*2)
+        player.jump(JUMP_P*PLAT_J_multi)
+    if player.rect.top > HEIGHT or PLAYER_health == 0: # game over
+        good_entities.clear()
+        bad_entities.clear()
+        jump_entities.clear()
+        DISPLAY.fill(c_black)
+        draw_stats()
+        draw_cross()
+        pygame.display.update()
+        time.sleep(1)
+        pygame.quit()
+        sys.exit()
 
     if player.rect.top <= HEIGHT/3:
+        player.score += 1
         player.pos.y += abs(player.vel.y)
         good_entities = update_ent(good_entities, player, PLAT_G_color, PLAT_G+1)
         bad_entities = update_ent(bad_entities, player, PLAT_B_color, PLAT_B+1)
