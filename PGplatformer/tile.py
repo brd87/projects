@@ -3,9 +3,9 @@ import random
 from pygame.locals import *
 
 class Tile:
-    def __init__(self, width, height, pos_x, pos_y, color, border):
+    def __init__(self, sprite_width, sprite_height, pos_x, pos_y, color, border):
         self.border = border
-        self.surf = pygame.Surface((width, height))
+        self.surf = pygame.Surface((sprite_width, sprite_height))
         self.surf.fill(color)
         self.rect = self.surf.get_rect(center = (pos_x, pos_y))
         self.speed = random.randint(-2, 2)

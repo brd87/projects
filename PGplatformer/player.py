@@ -4,7 +4,7 @@ from pygame.locals import *
 vec = pygame.math.Vector2
 
 class Player:
-    def __init__(self, WIDTH, HEIGHT, color, ACC, FRIC):
+    def __init__(self, WIDTH, HEIGHT, color, ACC, FRIC, health):
         self.border = WIDTH
         self.f_acc = ACC
         self.f_fric = FRIC
@@ -16,6 +16,7 @@ class Player:
         self.vel = vec(0,0)
         self.acc = vec(0,0)
         self.if_jump = False
+        self.health = health
         self.score = 0
 
 
