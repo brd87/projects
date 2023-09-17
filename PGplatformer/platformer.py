@@ -45,6 +45,7 @@ PLAYER_HEALTH_REG = 1
 
 ENEMY_COLOR = c_red
 ENEMY_PREP = 100
+ENEMY_MISSILE_C = 2000
 ##########################
 
 FPS = 60
@@ -156,7 +157,10 @@ bad_entities = generate_level(bad_entities, PLAT_B+1, PLAT_B_COLOR, True)
 jump_entities = []
 jump_entities = generate_level(jump_entities, PLAT_J+1, PLAT_J_COLOR, True)
 
+enemy_fired_time = 0
+
 while True:
+    current_time = pygame.time.get_ticks()
     draw((good_entities, bad_entities, jump_entities, player_missiles, enemy_missiles), player, enemy)
     update(good_entities, player)
 
@@ -194,6 +198,10 @@ while True:
         bad_entities = update_entities(bad_entities, player, PLAT_B_COLOR, PLAT_B+1)
         jump_entities = update_entities(jump_entities, player, PLAT_J_COLOR, PLAT_J+1)
     
+    if current_time - enemy_fired_time >= ENEMY_MISSILE_C:
+        enemy_missiles.append(Missile(enemy.rect.left+25, enemy.rect.bottom, c_red, 100, 10))
+        enemy_fired_time = current_time
+
     player_missiles = update_missiles(player_missiles)
     enemy_missiles = update_missiles(enemy_missiles)
 
