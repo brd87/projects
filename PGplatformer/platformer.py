@@ -20,19 +20,20 @@ c_white = (255, 255, 255)
 c_green = (0, 255, 0)
 c_yellow = (255, 255, 0)
 c_red = (255, 0, 0)
+c_red_a = (255, 0, 0, 128)
 c_gray = (128, 128, 128)
 c_blue = (0, 0, 255)
 
 # config
 ##########################
-PLAT_G = 10
-PLAT_B = 3
-PLAT_J = 2
-PLAT_G_COLOR = c_white
-PLAT_B_COLOR = c_red
-PLAT_J_COLOR = c_yellow
-PLAT_B_DAMAGE = 1
-PLAT_J_MULTI = 2
+TILE_G = 10
+TILE_B = 2
+TILE_J = 2
+TILE_G_COLOR = c_white
+TILE_B_COLOR = c_red
+TILE_J_COLOR = c_yellow
+TILE_B_DAMAGE = 1
+TILE_J_MULTI = 2
 
 PLAYER_COLOR = c_gray
 PLAYER_HEALTH = 100
@@ -46,15 +47,16 @@ PLAYER_MISSILE_COOL = 3
 PLAYER_FORCE_COLOR = c_blue
 PLAYER_FORCE_MULTI = 1.5
 PLAYER_FORCE_COOL = 3000
-PLAYER_HEALTH_REG = 1
+PLAYER_HEALTH_GAIN = 10
 
 ENEMY_COLOR = c_red
 ENEMY_PREP = 100
-ENEMY_MISSILE_COLOR = c_red
+ENEMY_MISSILE_COLOR = c_yellow
 ENEMY_MISSILE_COOL = 2000
+ENEMY_MISSILE_DAMAGE = 10
 ##########################
 
-FPS = 90
+FPS = 60
 FramePerSec = pygame.time.Clock()
 
 DISPLAY = pygame.display.set_mode(window_size)
@@ -111,9 +113,13 @@ def draw_stats():
 
 
 def draw_cross():
-    pygame.draw.line(DISPLAY, PLAT_B_COLOR, (0, 42), window_size, 20)
-    pygame.draw.line(DISPLAY, PLAT_B_COLOR, (window_size[0], 42), (0, window_size[1]), 20)
+    pygame.draw.line(DISPLAY, TILE_B_COLOR, (0, 42), window_size, 20)
+    pygame.draw.line(DISPLAY, TILE_B_COLOR, (window_size[0], 42), (0, window_size[1]), 20)
 
+def draw_damage():
+    damage = pygame.Surface((WIDTH, HEIGHT-41), pygame.SRCALPHA)
+    damage.fill(c_red_a)
+    DISPLAY.blit(damage, (0, 42))
 
 def update(entities, player):
     hit = pygame.sprite.spritecollide(player, entities, False)
@@ -124,7 +130,7 @@ def update(entities, player):
 def if_collision(entities, target):
     hit = pygame.sprite.spritecollide(target, entities, False)
     if hit:
-        return True
+        return hit[0]
     return False
 
 
@@ -152,18 +158,18 @@ enemy_missiles = []
 
 player_force = []
 
-start_tile = Tile(WIDTH, 20, WIDTH/2, HEIGHT-10, PLAT_G_COLOR, WIDTH)
+start_tile = Tile(WIDTH, 20, WIDTH/2, HEIGHT-10, TILE_G_COLOR, WIDTH)
 start_tile.if_move = False
-g_tile = Tile(WIDTH/4, 20, WIDTH/2, HEIGHT-100, PLAT_G_COLOR, WIDTH)
+g_tile = Tile(WIDTH/4, 20, WIDTH/2, HEIGHT-100, TILE_G_COLOR, WIDTH)
 
 good_entities = []
 good_entities.append(start_tile)
 good_entities.append(g_tile)
-good_entities = generate_level(good_entities, PLAT_G+1, PLAT_G_COLOR, True)
+good_entities = generate_level(good_entities, TILE_G+1, TILE_G_COLOR, True)
 bad_entities = []
-bad_entities = generate_level(bad_entities, PLAT_B+1, PLAT_B_COLOR, True)
+bad_entities = generate_level(bad_entities, TILE_B+1, TILE_B_COLOR, True)
 jump_entities = []
-jump_entities = generate_level(jump_entities, PLAT_J+1, PLAT_J_COLOR, True)
+jump_entities = generate_level(jump_entities, TILE_J+1, TILE_J_COLOR, True)
 
 enemy_fired_time = 0
 player_force_time = 0
@@ -174,43 +180,52 @@ while True:
     update(good_entities, player)
 
     player.move()
-    if if_collision(bad_entities, player) or if_collision(enemy_missiles, player): # damage
-        draw_cross()
-        player.health -= PLAT_B_DAMAGE
-    if if_collision(player_missiles, enemy): # player hit
-        player.health += PLAYER_HEALTH_REG
+    hit = if_collision(enemy_missiles, player)
+    if if_collision(bad_entities, player) or hit:       # damage
+        draw_damage()
+        if hit:
+            player.health -= ENEMY_MISSILE_DAMAGE
+            enemy_missiles.remove(hit)
+            hit = False
+        else:
+            player.health -= TILE_B_DAMAGE
+    hit = if_collision(player_missiles, enemy)
+    if hit:                                             # player hit
+        player.health += PLAYER_HEALTH_GAIN
+        player_missiles.remove(hit)
+        hit = False
         if player.health > PLAYER_HEALTH:
             player.health = PLAYER_HEALTH
-    if if_collision(jump_entities, player): # turbo jump
-        player.jump(PLAYER_JUMP_P*PLAT_J_MULTI)
-    if if_collision(player_force, enemy): # force jump
+    if if_collision(jump_entities, player):             # turbo jump
+        player.jump(PLAYER_JUMP_P*TILE_J_MULTI)
+    if if_collision(player_force, enemy):               # force jump
         player.jump(PLAYER_JUMP_P*PLAYER_FORCE_MULTI)
-    if player.rect.top > HEIGHT or player.health == 0: # game over
+    if player.rect.top > HEIGHT or player.health == 0:  # game over
         good_entities.clear()
         bad_entities.clear()
         jump_entities.clear()
         DISPLAY.fill(c_black)
         draw_stats()
-        draw_cross()
+        draw_damage()
         pygame.display.update()
         time.sleep(1)
         pygame.quit()
         sys.exit()
 
 
-    if player.rect.top <= HEIGHT/3:
+    if player.rect.top <= HEIGHT/2:
         player.score += 1
         enemy.score -= 1
         if enemy.score == 0:
             enemy.score = ENEMY_PREP
             enemy.up_dif()
         player.pos.y += abs(player.vel.y)
-        good_entities = update_entities(good_entities, player, PLAT_G_COLOR, PLAT_G+1)
-        bad_entities = update_entities(bad_entities, player, PLAT_B_COLOR, PLAT_B+1)
-        jump_entities = update_entities(jump_entities, player, PLAT_J_COLOR, PLAT_J+1)
+        good_entities = update_entities(good_entities, player, TILE_G_COLOR, TILE_G+1)
+        bad_entities = update_entities(bad_entities, player, TILE_B_COLOR, TILE_B+1)
+        jump_entities = update_entities(jump_entities, player, TILE_J_COLOR, TILE_J+1)
     
     if current_time - enemy_fired_time >= ENEMY_MISSILE_COOL:
-        enemy_missiles.append(Missile(enemy.rect.left+25, enemy.rect.bottom, 7, 30, ENEMY_MISSILE_COLOR, 100, 10))
+        enemy_missiles.append(Missile(enemy.rect.left+25, enemy.rect.bottom+15, 7, 30, ENEMY_MISSILE_COLOR, 100, 10))
         enemy_fired_time = current_time
 
     player_missiles = update_missiles(player_missiles)
@@ -219,18 +234,18 @@ while True:
 
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE: # esc / quit key
+            if event.key == pygame.K_ESCAPE:                                                                                # esc / quit key
                 pygame.quit()
                 sys.exit()
-            if event.key == pygame.K_UP and if_collision(good_entities, player): # up / jump key
+            if event.key == pygame.K_UP and if_collision(good_entities, player):                                            # up / jump key
                 player.jump(PLAYER_JUMP_P)
-            if event.key == pygame.K_SPACE and len(player_missiles) < PLAYER_MISSILE_COOL: # space / fire missile key
-                player_missiles.append(Missile(player.pos.x, player.pos.y, 5, 25, PLAYER_MISSILE_COLOR, 100, -10))
-            if event.key == pygame.K_LCTRL and current_time - player_force_time >= PLAYER_FORCE_COOL: # left ctrl / fire force key
-                player_force.append(Missile(player.pos.x, player.pos.y, 10, 10, PLAYER_FORCE_COLOR, 100, -15))
+            if event.key == pygame.K_SPACE and len(player_missiles) < PLAYER_MISSILE_COOL:                                  # space / fire missile key
+                player_missiles.append(Missile(player.pos.x, player.pos.y-52.5, 5, 25, PLAYER_MISSILE_COLOR, 100, -10))
+            if event.key == pygame.K_LCTRL and current_time - player_force_time >= PLAYER_FORCE_COOL:                       # left ctrl / fire force key
+                player_force.append(Missile(player.pos.x, player.pos.y-45, 10, 10, PLAYER_FORCE_COLOR, 100, -15))
                 player_force_time = current_time
         if event.type == pygame.KEYUP:
-            if event.key == pygame.K_UP and player.if_jump: # up / kill jump key
+            if event.key == pygame.K_UP and player.if_jump:                                                                 # up / kill jump key
                 player.kill_jump(PLAYER_JUMP_K)
         if event.type == QUIT:
             pygame.quit()
