@@ -18,6 +18,7 @@ class Player:
         self.if_jump = False
         self.health = health
         self.score = 0
+        self.ammo = 0
 
 
     def move(self):
@@ -46,6 +47,8 @@ class Player:
         self.vel.y += power
 
     def player_hit(self, hit):
+        if hit.if_move:
+            self.pos += (hit.speed, 0)
         if self.pos.y < hit.rect.bottom:
             self.if_jump = False
             self.pos.y = hit.rect.top + 1
