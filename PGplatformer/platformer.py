@@ -24,19 +24,27 @@ c_red = (255, 0, 0)
 c_red_a = (255, 0, 0, 128)
 c_gray = (128, 128, 128)
 c_blue = (0, 0, 255)
+c_light_blue = (0, 153, 153)
+c_orange = (155, 128, 0)
 
 # config
 ##########################
 SE_DIR = "soundef/"
+SP_DIR = "sprites/"
 GAME_SOUNDTRACK = "soundtrack.wav"
-GAME_VOL = 0.5
+GAME_VOL = 0.05
+GAME_BG_SP = pygame.image.load(SP_DIR + "background2.png")
 
 TILE_G = 10
 TILE_B = 2
 TILE_J = 2
 TILE_G_COLOR = c_white
+TILE_G_SP = SP_DIR + "good_tile.png"
 TILE_B_COLOR = c_red
+TILE_B_SP = SP_DIR + "bad_tile.png"
 TILE_J_COLOR = c_yellow
+TILE_J_SP = SP_DIR + "jump_tile.png"
+
 TILE_B_DAMAGE = 1
 TILE_J_MULTI = 2
 
@@ -72,6 +80,7 @@ ENEMY_MISSILE_DAMAGE = 10
 
 AMMO_AV = 1
 AMMO_COLOR = c_green
+AMMO_SP = SP_DIR + "ammo_bag.png"
 AMMO_SE = pygame.mixer.Sound(SE_DIR + "reload.wav")
 AMMO_COUNT = 1
 
@@ -91,12 +100,12 @@ DISPLAY = pygame.display.set_mode(window_size)
 pygame.display.set_caption("PGplatformer")
 
 
-def generate_tile(color):
-    return Tile(random.randint(50,100), 12, random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), color, WIDTH)
+def generate_tile(image):
+    return Tile(random.randint(50,100), 12, random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), image, WIDTH)
 
 
-def generate_item(color):
-    return Item(random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), 30, 30, color)
+def generate_item(image):
+    return Item(random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), 30, 30, image)
 
 
 def check_tile(entities, target):
@@ -110,21 +119,22 @@ def check_tile(entities, target):
     return False
 
 
-def generate_level(entities, amount, color, if_first_gen, if_tile):
+def generate_level(entities, amount, image, if_first_gen, if_tile):
     while len(entities) < amount:
-        if if_tile: object = generate_tile(color)
-        else: object = generate_item(color)
+        if if_tile: object = generate_tile(image)
+        else: object = generate_item(image)
         if not if_first_gen: object.rect.y -= HEIGHT
         while check_tile(entities, object):
-            if if_tile: object = generate_tile(color)
-            else: object = generate_item(color)
+            if if_tile: object = generate_tile(image)
+            else: object = generate_item(image)
             if not if_first_gen: object.rect.y -= HEIGHT
         entities.append(object)
     return entities
 
 
 def draw(entities_group, items_group, player, enemy):
-    DISPLAY.fill(c_black)
+    #DISPLAY.fill(c_black)
+    DISPLAY.blit(GAME_BG_SP, (0, 0))
     DISPLAY.blit(player.surf, player.rect)
     DISPLAY.blit(enemy.surf, enemy.rect)
     enemy.move()
@@ -140,20 +150,22 @@ def draw(entities_group, items_group, player, enemy):
 
 def draw_stats():
     text = pygame.font.SysFont("impact", 20)
-    text_score = text.render(str(player.score), True, c_black)
-    text_health = text.render(f"Heath: {player.health}%", True, c_black)
-    text_ammo = text.render(f"Ammo: {player.ammo}/{PLAYER_MISSILE_LIMIT}", True, c_black)
-    pygame.draw.line(DISPLAY, c_white, (0, 20), (WIDTH, 20), 40)
-    pygame.draw.line(DISPLAY, c_gray, (0, 41), (WIDTH, 41), 1)
-    pygame.draw.line(DISPLAY, c_gray, (0, 0), (WIDTH, 0), 1)
-    DISPLAY.blit(text_health, (0, 10))
-    DISPLAY.blit(text_ammo, (WIDTH/4, 10))
-    DISPLAY.blit(text_score, (WIDTH/4*3, 10))
+    text_health = text.render(f"Heath: {player.health}%", True, c_light_blue)
+    text_ammo = text.render(f"Ammo: {player.ammo}/{PLAYER_MISSILE_LIMIT}", True, c_orange)
+    text_score = text.render(str(player.score), True, c_gray)
+    # pygame.draw.line(DISPLAY, c_white, (0, 20), (WIDTH, 20), 40)
+    # pygame.draw.line(DISPLAY, c_gray, (0, 41), (WIDTH, 41), 1)
+    # pygame.draw.line(DISPLAY, c_gray, (0, 0), (WIDTH, 0), 1)
+    stat_bar = pygame.image.load("sprites/stat_bar.png")
+    DISPLAY.blit(stat_bar, (0, 0))
+    DISPLAY.blit(text_health, (7, 8))
+    DISPLAY.blit(text_ammo, (WIDTH/4+8, 8))
+    DISPLAY.blit(text_score, (WIDTH/4*3, 7))
     
     
 def draw_cross():
-    pygame.draw.line(DISPLAY, TILE_B_COLOR, (0, 42), window_size, 20)
-    pygame.draw.line(DISPLAY, TILE_B_COLOR, (window_size[0], 42), (0, window_size[1]), 20)
+    pygame.draw.line(DISPLAY, TILE_B_SP, (0, 42), window_size, 20)
+    pygame.draw.line(DISPLAY, TILE_B_SP, (window_size[0], 42), (0, window_size[1]), 20)
 
 
 def draw_fog(color):
@@ -175,13 +187,13 @@ def if_collision(entities, target):
     return False
 
 
-def update_entities(entities, target, color, amount, if_tile):
+def update_entities(entities, target, image, amount, if_tile):
     new_ent = []
     for entity in entities:
         entity.rect.y += abs(target.vel.y)
         if entity.rect.top < HEIGHT:
             new_ent.append(entity)
-    return generate_level(new_ent, amount, color, False, if_tile)
+    return generate_level(new_ent, amount, image, False, if_tile)
 
 
 def update_missiles(missiles):
@@ -201,30 +213,30 @@ enemy_missiles = []
 player_force = []
 
 ammo_bags = []
-start_ammo = Item(WIDTH/2, HEIGHT-150, 30, 30, AMMO_COLOR)
+start_ammo = Item(WIDTH/2, HEIGHT-150, 30, 30, AMMO_SP)
 ammo_bags.append(start_ammo)
-ammo_bags = generate_level(ammo_bags, AMMO_AV+1, AMMO_COLOR, True, False)
+ammo_bags = generate_level(ammo_bags, AMMO_AV+1, AMMO_SP, True, False)
 shield_bags = []
 
-start_tile = Tile(WIDTH, 20, WIDTH/2, HEIGHT-10, TILE_G_COLOR, WIDTH)
+start_tile = Tile(WIDTH, 20, WIDTH/2, HEIGHT-10, TILE_G_SP, WIDTH)
 start_tile.if_move = False
-g_tile = Tile(WIDTH/4, 20, WIDTH/2, HEIGHT-100, TILE_G_COLOR, WIDTH)
+g_tile = Tile(WIDTH/4, 20, WIDTH/2, HEIGHT-100, TILE_G_SP, WIDTH)
 
 good_entities = []
 good_entities.append(start_tile)
 good_entities.append(g_tile)
-good_entities = generate_level(good_entities, TILE_G+1, TILE_G_COLOR, True, True)
+good_entities = generate_level(good_entities, TILE_G+1, TILE_G_SP, True, True)
 bad_entities = []
-bad_entities = generate_level(bad_entities, TILE_B+1, TILE_B_COLOR, True, True)
+bad_entities = generate_level(bad_entities, TILE_B+1, TILE_B_SP, True, True)
 jump_entities = []
-jump_entities = generate_level(jump_entities, TILE_J+1, TILE_J_COLOR, True, True)
+jump_entities = generate_level(jump_entities, TILE_J+1, TILE_J_SP, True, True)
 
 enemy_fired_time = 0
 player_force_time = 0
 player_hit_time = 0
 
 pygame.mixer.music.load(SE_DIR + GAME_SOUNDTRACK)
-pygame.mixer.music.set_volume(GAME_VOL/10)
+pygame.mixer.music.set_volume(GAME_VOL)
 pygame.mixer.music.play(-1)
 while True:
     current_time = pygame.time.get_ticks()
@@ -264,7 +276,8 @@ while True:
     if if_collision(player_force, enemy):               # force jump
         player.jump(PLAYER_JUMP_P*PLAYER_FORCE_MULTI)
     if player.rect.top > HEIGHT or player.health == 0:  # game over
-        DISPLAY.fill(c_black)
+        #DISPLAY.fill(c_black)
+        DISPLAY.blit(GAME_BG_SP, (0, 0))
         PLAYER_DEATH_SE.play()
         draw_stats()
         draw_fog(PLAYER_DAMAGE_COLOR)
@@ -281,10 +294,10 @@ while True:
             enemy.score = ENEMY_SCALE
             enemy.up_dif()
         player.pos.y += abs(player.vel.y)
-        good_entities = update_entities(good_entities, player, TILE_G_COLOR, TILE_G+1, True)
-        bad_entities = update_entities(bad_entities, player, TILE_B_COLOR, TILE_B+1, True)
-        jump_entities = update_entities(jump_entities, player, TILE_J_COLOR, TILE_J+1, True)
-        ammo_bags = update_entities(ammo_bags, player, AMMO_COLOR, AMMO_AV+1, False)
+        good_entities = update_entities(good_entities, player, TILE_G_SP, TILE_G+1, True)
+        bad_entities = update_entities(bad_entities, player, TILE_B_SP, TILE_B+1, True)
+        jump_entities = update_entities(jump_entities, player, TILE_J_SP, TILE_J+1, True)
+        ammo_bags = update_entities(ammo_bags, player, AMMO_SP, AMMO_AV+1, False)
     
     if current_time - enemy_fired_time >= ENEMY_MISSILE_COOL:
         ENEMY_MISSILE_SE.play()

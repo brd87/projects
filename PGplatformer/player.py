@@ -8,8 +8,9 @@ class Player:
         self.border = WIDTH
         self.f_acc = ACC
         self.f_fric = FRIC
-        self.surf = pygame.Surface((40, 40))
-        self.surf.fill(color)
+        self.surf = pygame.image.load("sprites/player.png")
+        #self.surf = pygame.Surface((40, 40))
+        #self.surf.fill(color)
         self.rect = self.surf.get_rect(center = (WIDTH/2, HEIGHT-40))
 
         self.pos = vec((WIDTH/2, HEIGHT-40))
