@@ -27,6 +27,10 @@ c_blue = (0, 0, 255)
 
 # config
 ##########################
+SE_DIR = "soundef/"
+GAME_SOUNDTRACK = "soundtrack.wav"
+GAME_VOL = 0.5
+
 TILE_G = 10
 TILE_B = 2
 TILE_J = 2
@@ -38,28 +42,46 @@ TILE_J_MULTI = 2
 
 PLAYER_COLOR = c_gray
 PLAYER_HEALTH = 100
+
 PLAYER_SCORE = 0
 PLAYER_ACC = 0.5
 PLAYER_FRIC = -0.12
 PLAYER_JUMP_P = 15
 PLAYER_JUMP_K = 5
 PLAYER_MISSILE_COLOR = c_green
+PLAYER_MISSILE_SE = pygame.mixer.Sound(SE_DIR + "player_laser.wav")
 PLAYER_MISSILE_LIMIT = 3
 PLAYER_FORCE_COLOR = c_blue
+PLAYER_FORCE_SE = pygame.mixer.Sound(SE_DIR + "force.wav")
 PLAYER_FORCE_MULTI = 1.5
 PLAYER_FORCE_COOL = 3000
+PLAYER_HEALTH_GAIN_COLOR = c_green
 PLAYER_HEALTH_GAIN = 10
+PLAYER_DAMAGE_COLOR = c_red_a
 PLAYER_DAMAGE_COOL = 2000
+PLAYER_DAMAGE_SE = pygame.mixer.Sound(SE_DIR + "damage.wav")
+PLAYER_DEATH_SE = pygame.mixer.Sound(SE_DIR + "death.wav")
 
 ENEMY_COLOR = c_red
-ENEMY_PREP = 100
+ENEMY_HIT_SE = pygame.mixer.Sound(SE_DIR + "enemy_hit.wav")
+ENEMY_SCALE = 100
 ENEMY_MISSILE_COLOR = c_red
+ENEMY_MISSILE_SE = pygame.mixer.Sound(SE_DIR + "enemy_laser.wav")
 ENEMY_MISSILE_COOL = 2000
 ENEMY_MISSILE_DAMAGE = 10
 
 AMMO_AV = 1
 AMMO_COLOR = c_green
+AMMO_SE = pygame.mixer.Sound(SE_DIR + "reload.wav")
 AMMO_COUNT = 1
+
+PLAYER_MISSILE_SE.set_volume(GAME_VOL)
+PLAYER_FORCE_SE.set_volume(GAME_VOL)
+PLAYER_DAMAGE_SE.set_volume(GAME_VOL)
+PLAYER_DEATH_SE.set_volume(GAME_VOL)
+ENEMY_HIT_SE.set_volume(GAME_VOL)
+ENEMY_MISSILE_SE.set_volume(GAME_VOL)
+AMMO_SE.set_volume(GAME_VOL)
 ##########################
 
 FPS = 60
@@ -71,6 +93,7 @@ pygame.display.set_caption("PGplatformer")
 
 def generate_tile(color):
     return Tile(random.randint(50,100), 12, random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), color, WIDTH)
+
 
 def generate_item(color):
     return Item(random.randint(0,WIDTH-10), random.randint(0, HEIGHT-50), 30, 30, color)
@@ -128,18 +151,16 @@ def draw_stats():
     DISPLAY.blit(text_score, (WIDTH/4*3, 10))
     
     
-    
-
-
 def draw_cross():
     pygame.draw.line(DISPLAY, TILE_B_COLOR, (0, 42), window_size, 20)
     pygame.draw.line(DISPLAY, TILE_B_COLOR, (window_size[0], 42), (0, window_size[1]), 20)
 
 
-def draw_damage():
-    damage = pygame.Surface((WIDTH, HEIGHT-41), pygame.SRCALPHA)
-    damage.fill(c_red_a)
-    DISPLAY.blit(damage, (0, 42))
+def draw_fog(color):
+    fog = pygame.Surface((WIDTH, HEIGHT-41), pygame.SRCALPHA)
+    fog.fill(color)
+    DISPLAY.blit(fog, (0, 42))
+
 
 def update(entities, player):
     hit = pygame.sprite.spritecollide(player, entities, False)
@@ -162,6 +183,7 @@ def update_entities(entities, target, color, amount, if_tile):
             new_ent.append(entity)
     return generate_level(new_ent, amount, color, False, if_tile)
 
+
 def update_missiles(missiles):
     new_missiles = []
     for missile in missiles:
@@ -171,7 +193,7 @@ def update_missiles(missiles):
 
 
 player = Player(WIDTH, HEIGHT, PLAYER_COLOR, PLAYER_ACC, PLAYER_FRIC, PLAYER_HEALTH)
-enemy = Enemy(WIDTH, ENEMY_COLOR, ENEMY_PREP)
+enemy = Enemy(WIDTH, ENEMY_COLOR, ENEMY_SCALE)
 
 player_missiles = []
 enemy_missiles = []
@@ -201,6 +223,9 @@ enemy_fired_time = 0
 player_force_time = 0
 player_hit_time = 0
 
+pygame.mixer.music.load(SE_DIR + GAME_SOUNDTRACK)
+pygame.mixer.music.set_volume(GAME_VOL/10)
+pygame.mixer.music.play(-1)
 while True:
     current_time = pygame.time.get_ticks()
     draw((good_entities, bad_entities, jump_entities, player_missiles, enemy_missiles, player_force), (ammo_bags, shield_bags), player, enemy)
@@ -209,7 +234,8 @@ while True:
     player.move()
     hit = if_collision(enemy_missiles, player)
     if (if_collision(bad_entities, player) or hit) and current_time - player_hit_time >= PLAYER_DAMAGE_COOL:       # damage
-        draw_damage()
+        draw_fog(PLAYER_DAMAGE_COLOR)
+        PLAYER_DAMAGE_SE.play()
         player_hit_time = current_time
         if hit:
             player.health -= ENEMY_MISSILE_DAMAGE
@@ -219,6 +245,8 @@ while True:
             player.health -= TILE_B_DAMAGE
     hit = if_collision(player_missiles, enemy)
     if hit:                                             # player hit
+        draw_fog(PLAYER_HEALTH_GAIN_COLOR)
+        ENEMY_HIT_SE.play()
         player.health += PLAYER_HEALTH_GAIN
         player_missiles.remove(hit)
         hit = False
@@ -226,20 +254,22 @@ while True:
             player.health = PLAYER_HEALTH
     hit = if_collision(ammo_bags, player)
     if hit:                                             # ammo gain
+        AMMO_SE.play()
         ammo_bags.remove(hit)
         hit = False
         if player.ammo < PLAYER_MISSILE_LIMIT:
-            player.ammo += 1
+            player.ammo += AMMO_COUNT
     if if_collision(jump_entities, player):             # turbo jump
         player.jump(PLAYER_JUMP_P*TILE_J_MULTI)
     if if_collision(player_force, enemy):               # force jump
         player.jump(PLAYER_JUMP_P*PLAYER_FORCE_MULTI)
     if player.rect.top > HEIGHT or player.health == 0:  # game over
         DISPLAY.fill(c_black)
+        PLAYER_DEATH_SE.play()
         draw_stats()
-        draw_damage()
+        draw_fog(PLAYER_DAMAGE_COLOR)
         pygame.display.update()
-        time.sleep(1)
+        time.sleep(2)
         pygame.quit()
         sys.exit()
 
@@ -248,22 +278,23 @@ while True:
         player.score += 1
         enemy.score -= 1
         if enemy.score == 0:
-            enemy.score = ENEMY_PREP
+            enemy.score = ENEMY_SCALE
             enemy.up_dif()
         player.pos.y += abs(player.vel.y)
         good_entities = update_entities(good_entities, player, TILE_G_COLOR, TILE_G+1, True)
         bad_entities = update_entities(bad_entities, player, TILE_B_COLOR, TILE_B+1, True)
         jump_entities = update_entities(jump_entities, player, TILE_J_COLOR, TILE_J+1, True)
         ammo_bags = update_entities(ammo_bags, player, AMMO_COLOR, AMMO_AV+1, False)
-        print(len(ammo_bags))
     
     if current_time - enemy_fired_time >= ENEMY_MISSILE_COOL:
+        ENEMY_MISSILE_SE.play()
         enemy_missiles.append(Missile(enemy.rect.left+25, enemy.rect.bottom+15, 7, 30, ENEMY_MISSILE_COLOR, 100, 10))
         enemy_fired_time = current_time
 
     player_missiles = update_missiles(player_missiles)
     enemy_missiles = update_missiles(enemy_missiles)
     player_force = update_missiles(player_force)
+
 
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
@@ -273,9 +304,11 @@ while True:
             if event.key == pygame.K_UP and if_collision(good_entities, player):                                            # up / jump key
                 player.jump(PLAYER_JUMP_P)
             if event.key == pygame.K_SPACE and player.ammo > 0:                                                             # space / fire missile key
+                PLAYER_MISSILE_SE.play()
                 player_missiles.append(Missile(player.pos.x, player.pos.y-52.5, 5, 25, PLAYER_MISSILE_COLOR, 100, -10))
                 player.ammo -= 1
             if event.key == pygame.K_LCTRL and current_time - player_force_time >= PLAYER_FORCE_COOL:                       # left ctrl / fire force key
+                PLAYER_FORCE_SE.play()
                 player_force.append(Missile(player.pos.x, player.pos.y-45, 10, 10, PLAYER_FORCE_COLOR, 100, -15))
                 player_force_time = current_time
         if event.type == pygame.KEYUP:
