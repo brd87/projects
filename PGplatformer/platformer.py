@@ -11,7 +11,6 @@ from missile import Missile
 from item import Item
 
 pygame.init()
-
 WIDTH = 500
 HEIGHT = 842
 window_size = (WIDTH, HEIGHT)
