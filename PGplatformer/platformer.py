@@ -33,53 +33,49 @@ SE_DIR = "soundef/"
 SP_DIR = "sprites/"
 GAME_SOUNDTRACK = "soundtrack.wav"
 GAME_VOL = 0.05
-GAME_BG_SP = pygame.image.load(SP_DIR + "background2.png")
+GAME_BG_SP = pygame.image.load(SP_DIR + "background.png")
 
 TILE_G = 10
 TILE_B = 2
 TILE_J = 2
-TILE_G_COLOR = c_white
 TILE_G_SP = SP_DIR + "good_tile.png"
-TILE_B_COLOR = c_red
 TILE_B_SP = SP_DIR + "bad_tile.png"
-TILE_J_COLOR = c_yellow
 TILE_J_SP = SP_DIR + "jump_tile.png"
-
 TILE_B_DAMAGE = 1
 TILE_J_MULTI = 2
 
-PLAYER_COLOR = c_gray
 PLAYER_HEALTH = 100
-
 PLAYER_SCORE = 0
 PLAYER_ACC = 0.5
 PLAYER_FRIC = -0.12
 PLAYER_JUMP_P = 15
 PLAYER_JUMP_K = 5
-PLAYER_MISSILE_COLOR = c_green
+PLAYER_MISSILE_SP = SP_DIR + "player_missile.png"
 PLAYER_MISSILE_SE = pygame.mixer.Sound(SE_DIR + "player_laser.wav")
 PLAYER_MISSILE_LIMIT = 3
-PLAYER_FORCE_COLOR = c_blue
+PLAYER_MISSILE_SPEED = 10
+PLAYER_FORCE_SP = SP_DIR + "force.png"
 PLAYER_FORCE_SE = pygame.mixer.Sound(SE_DIR + "force.wav")
 PLAYER_FORCE_MULTI = 1.5
 PLAYER_FORCE_COOL = 3000
+PLAYER_FORCE_SPEED = 20
 PLAYER_HEALTH_GAIN_COLOR = c_green
 PLAYER_HEALTH_GAIN = 10
 PLAYER_DAMAGE_COLOR = c_red_a
 PLAYER_DAMAGE_COOL = 2000
 PLAYER_DAMAGE_SE = pygame.mixer.Sound(SE_DIR + "damage.wav")
 PLAYER_DEATH_SE = pygame.mixer.Sound(SE_DIR + "death.wav")
+PLAYER_PJUMP_SE = pygame.mixer.Sound(SE_DIR + "power_jump.wav")
 
-ENEMY_COLOR = c_red
 ENEMY_HIT_SE = pygame.mixer.Sound(SE_DIR + "enemy_hit.wav")
-ENEMY_SCALE = 100
-ENEMY_MISSILE_COLOR = c_red
+ENEMY_SCALING = 500
+ENEMY_MISSILE_SP = SP_DIR + "enemy_missile.png"
 ENEMY_MISSILE_SE = pygame.mixer.Sound(SE_DIR + "enemy_laser.wav")
 ENEMY_MISSILE_COOL = 2000
 ENEMY_MISSILE_DAMAGE = 10
+ENEMY_MISSILE_SPEED = 10
 
 AMMO_AV = 1
-AMMO_COLOR = c_green
 AMMO_SP = SP_DIR + "ammo_bag.png"
 AMMO_SE = pygame.mixer.Sound(SE_DIR + "reload.wav")
 AMMO_COUNT = 1
@@ -88,6 +84,7 @@ PLAYER_MISSILE_SE.set_volume(GAME_VOL)
 PLAYER_FORCE_SE.set_volume(GAME_VOL)
 PLAYER_DAMAGE_SE.set_volume(GAME_VOL)
 PLAYER_DEATH_SE.set_volume(GAME_VOL)
+PLAYER_PJUMP_SE.set_volume(GAME_VOL)
 ENEMY_HIT_SE.set_volume(GAME_VOL)
 ENEMY_MISSILE_SE.set_volume(GAME_VOL)
 AMMO_SE.set_volume(GAME_VOL)
@@ -204,8 +201,8 @@ def update_missiles(missiles):
     return new_missiles
 
 
-player = Player(WIDTH, HEIGHT, PLAYER_COLOR, PLAYER_ACC, PLAYER_FRIC, PLAYER_HEALTH)
-enemy = Enemy(WIDTH, ENEMY_COLOR, ENEMY_SCALE)
+player = Player(WIDTH, HEIGHT, PLAYER_ACC, PLAYER_FRIC, PLAYER_HEALTH)
+enemy = Enemy(WIDTH, ENEMY_SCALING)
 
 player_missiles = []
 enemy_missiles = []
@@ -272,6 +269,7 @@ while True:
         if player.ammo < PLAYER_MISSILE_LIMIT:
             player.ammo += AMMO_COUNT
     if if_collision(jump_entities, player):             # turbo jump
+        PLAYER_PJUMP_SE.play()
         player.jump(PLAYER_JUMP_P*TILE_J_MULTI)
     if if_collision(player_force, enemy):               # force jump
         player.jump(PLAYER_JUMP_P*PLAYER_FORCE_MULTI)
@@ -291,7 +289,7 @@ while True:
         player.score += 1
         enemy.score -= 1
         if enemy.score == 0:
-            enemy.score = ENEMY_SCALE
+            enemy.score = ENEMY_SCALING
             enemy.up_dif()
         player.pos.y += abs(player.vel.y)
         good_entities = update_entities(good_entities, player, TILE_G_SP, TILE_G+1, True)
@@ -301,7 +299,7 @@ while True:
     
     if current_time - enemy_fired_time >= ENEMY_MISSILE_COOL:
         ENEMY_MISSILE_SE.play()
-        enemy_missiles.append(Missile(enemy.rect.left+25, enemy.rect.bottom+15, 7, 30, ENEMY_MISSILE_COLOR, 100, 10))
+        enemy_missiles.append(Missile(enemy.rect.left+25, enemy.rect.bottom+15, 7, 30, ENEMY_MISSILE_SP, ENEMY_MISSILE_SPEED))
         enemy_fired_time = current_time
 
     player_missiles = update_missiles(player_missiles)
@@ -315,14 +313,15 @@ while True:
                 pygame.quit()
                 sys.exit()
             if event.key == pygame.K_UP and if_collision(good_entities, player):                                            # up / jump key
+                PLAYER_PJUMP_SE.play()
                 player.jump(PLAYER_JUMP_P)
             if event.key == pygame.K_SPACE and player.ammo > 0:                                                             # space / fire missile key
                 PLAYER_MISSILE_SE.play()
-                player_missiles.append(Missile(player.pos.x, player.pos.y-52.5, 5, 25, PLAYER_MISSILE_COLOR, 100, -10))
+                player_missiles.append(Missile(player.pos.x, player.pos.y-52.5, 5, 25, PLAYER_MISSILE_SP, -PLAYER_MISSILE_SPEED))
                 player.ammo -= 1
             if event.key == pygame.K_LCTRL and current_time - player_force_time >= PLAYER_FORCE_COOL:                       # left ctrl / fire force key
                 PLAYER_FORCE_SE.play()
-                player_force.append(Missile(player.pos.x, player.pos.y-45, 10, 10, PLAYER_FORCE_COLOR, 100, -15))
+                player_force.append(Missile(player.pos.x, player.pos.y-45, 10, 10, PLAYER_FORCE_SP, -PLAYER_FORCE_SPEED))
                 player_force_time = current_time
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP and player.if_jump:                                                                 # up / kill jump key

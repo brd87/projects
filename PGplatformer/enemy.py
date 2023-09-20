@@ -3,7 +3,7 @@ import random
 from pygame.locals import *
 
 class Enemy:
-    def __init__(self, WIDTH, color, prep):
+    def __init__(self, WIDTH, prep):
         self.border = WIDTH
         self.surf = pygame.image.load("sprites/enemy.png")
         # self.surf = pygame.Surface((50, 50))
