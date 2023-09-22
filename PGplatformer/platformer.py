@@ -30,7 +30,9 @@ c_red_a = (255, 0, 0, 128)
 c_gray = (128, 128, 128)
 c_blue = (0, 0, 255)
 c_light_blue = (0, 153, 153)
+c_lighter_blue = (0, 200, 200)
 c_orange = (155, 128, 0)
+c_light_oragne = (205, 178, 0)
 
 
 
@@ -83,13 +85,27 @@ def draw(entities_group, items_group, player, enemy, game_bg, missile_limit):
 
 def draw_stats(player, missile_limit):
     text = pygame.font.SysFont("impact", 20)
-    text_health = text.render(f"Heath: {player.health}%", True, c_light_blue)
-    text_ammo = text.render(f"Ammo: {player.ammo}/{missile_limit}", True, c_orange)
     text_score = text.render(str(player.score), True, c_gray)
     stat_bar = pygame.image.load("sprites/stat_bar.png")
     DISPLAY.blit(stat_bar, (0, 0))
-    DISPLAY.blit(text_health, (7, 8))
-    DISPLAY.blit(text_ammo, (WIDTH/4+8, 8))
+    pos=15
+    player_quan = player.health//10
+    for x in range(10):
+        if player_quan > 0:
+            pygame.draw.line(DISPLAY, c_light_blue, (pos, 8), (pos, 33), 7)
+            player_quan-=1
+        else:
+            pygame.draw.line(DISPLAY, c_lighter_blue, (pos, 8), (pos, 33), 7)
+        pos+=9
+    pos = WIDTH/4+21
+    player_quan = player.ammo
+    for x in range(3):
+        if player_quan > 0:
+            pygame.draw.line(DISPLAY, c_orange, (pos, 8), (pos, 33), 26)
+            player_quan-=1
+        else:
+            pygame.draw.line(DISPLAY, c_light_oragne, (pos, 8), (pos, 33), 26)
+        pos+=31
     DISPLAY.blit(text_score, (WIDTH/4*3, 7))
 
 
@@ -128,6 +144,8 @@ def update_missiles(missiles):
             new_missiles.append(missile)
     return new_missiles
 
+def save_score(playername, score):
+    pass
 
 player = Player(WIDTH, HEIGHT, config.PLAYER_ACC, config.PLAYER_FRIC, config.PLAYER_HEALTH)
 enemy = Enemy(WIDTH, config.ENEMY_SCALING)
@@ -206,6 +224,7 @@ while True:
     if if_collision(player_force, enemy):               # force jump
         player.jump(config.PLAYER_JUMP_P*config.PLAYER_FORCE_MULTI)
     if player.rect.top > HEIGHT or player.health <= 0:  # game over
+        save_score(config.PLAYER_UESRNAME, player.score)
         DISPLAY.blit(config.GAME_BG_SP, (0, 0))
         config.PLAYER_DEATH_SE.play()
         draw_stats(player, config.PLAYER_MISSILE_LIMIT)
