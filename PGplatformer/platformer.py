@@ -1,3 +1,4 @@
+import os
 import pygame
 import sys
 import random
@@ -144,8 +145,21 @@ def update_missiles(missiles):
             new_missiles.append(missile)
     return new_missiles
 
-def save_score(playername, score):
-    pass
+def save_score(playername, player_score):
+    scores = [[playername, player_score]]
+    if os.path.exists("player_scores.txt"):
+        with open("player_scores.txt", "r", encoding="utf-8") as file:
+            for line in file:
+                line = line.split(";;")
+                line[1] = int(line[1].rstrip())
+                scores.append(line)
+    scores = sorted(scores, key=lambda x: x[1], reverse=True)
+    if len(scores) > 10:
+        scores.pop()
+    with open("player_scores.txt", "w", encoding="utf-8") as file:
+        for score in scores:
+            file.write(f"{score[0]};;{score[1]}\n")
+    
 
 player = Player(WIDTH, HEIGHT, config.PLAYER_ACC, config.PLAYER_FRIC, config.PLAYER_HEALTH)
 enemy = Enemy(WIDTH, config.ENEMY_SCALING)

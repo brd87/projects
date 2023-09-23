@@ -98,11 +98,17 @@ class Config:
         self.settings_menu.add.button("Back", self.quit_settings)
 
         self.scores_menu = pygame_menu.Menu("Scores", WIDTH, HEIGHT, theme = PGp_theme)
-        self.scores_menu.add.label("Player Scores\n------------------")
+        self.scores_menu.add.label("Player Scores\n--------------------------")
         if os.path.exists("player_scores.txt"):
+            score_table = self.scores_menu.add.table()
+            score_table.default_cell_padding=5
+            score_table.add_row(("Rank", "Username", "Score"), cell_font_size=20, cell_border_width=0)
             with open("player_scores.txt", "r", encoding="utf-8") as file:
+                rank = 1
                 for line in file:
-                    self.scores_menu.add.label(line)
+                    line = line.split(";;")
+                    score_table.add_row((f"{rank}.", f"{line[0]}\t\t", line[1].rstrip()), cell_font_size=20, cell_border_width=0)
+                    rank += 1
         else:
             self.scores_menu.add.label("No one played yet :(")
         self.scores_menu.add.button("Back", self.quit_scores)
@@ -111,8 +117,10 @@ class Config:
     def climb(self):
         pygame.mixer.music.stop()
         self.PLAYER_PJUMP_SE.play()
-        self.main_menu.disable()
-
+        
+        self.PLAYER_UESRNAME = self.PLAYER_UESRNAME.get_value()
+        if ";;" in self.PLAYER_UESRNAME:
+            self.PLAYER_UESRNAME = self.PLAYER_UESRNAME.strip(";;")
         self.PLAYER_MISSILE_SE.set_volume(self.SE_VOL)
         self.PLAYER_FORCE_SE.set_volume(self.SE_VOL)
         self.PLAYER_DAMAGE_SE.set_volume(self.SE_VOL)
@@ -121,6 +129,8 @@ class Config:
         self.ENEMY_HIT_SE.set_volume(self.SE_VOL)
         self.ENEMY_MISSILE_SE.set_volume(self.SE_VOL)
         self.AMMO_SE.set_volume(self.SE_VOL)
+
+        self.main_menu.disable()
 
 
     def scores(self):
