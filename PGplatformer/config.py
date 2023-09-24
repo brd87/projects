@@ -85,7 +85,7 @@ class Config:
             )
 
         self.main_menu = pygame_menu.Menu("PGplatformer", WIDTH, HEIGHT, theme = PGp_theme)
-        self.PLAYER_UESRNAME = self.main_menu.add.text_input("Playername ", default = 'Platbot9000', maxchar = 20)
+        self.PLAYER_UESRNAME_input = self.main_menu.add.text_input("Playername ", default = "Platbot9000", maxchar = 20)
         self.main_menu.add.button("CLIMB", self.climb)
         self.main_menu.add.button("Scores", self.scores)
         self.main_menu.add.button("Options", self.settings)
@@ -98,29 +98,17 @@ class Config:
         self.settings_menu.add.button("Back", self.quit_settings)
 
         self.scores_menu = pygame_menu.Menu("Scores", WIDTH, HEIGHT, theme = PGp_theme)
-        self.scores_menu.add.label("Player Scores\n--------------------------")
-        if os.path.exists("player_scores.txt"):
-            score_table = self.scores_menu.add.table()
-            score_table.default_cell_padding=5
-            score_table.add_row(("Rank", "Username", "Score"), cell_font_size=20, cell_border_width=0)
-            with open("player_scores.txt", "r", encoding="utf-8") as file:
-                rank = 1
-                for line in file:
-                    line = line.split(";;")
-                    score_table.add_row((f"{rank}.", f"{line[0]}\t\t", line[1].rstrip()), cell_font_size=20, cell_border_width=0)
-                    rank += 1
-        else:
-            self.scores_menu.add.label("No one played yet :(")
-        self.scores_menu.add.button("Back", self.quit_scores)
+        # defined in scores()
 
 
     def climb(self):
-        pygame.mixer.music.stop()
         self.PLAYER_PJUMP_SE.play()
         
-        self.PLAYER_UESRNAME = self.PLAYER_UESRNAME.get_value()
+        self.PLAYER_UESRNAME = self.PLAYER_UESRNAME_input.get_value()
         if ";;" in self.PLAYER_UESRNAME:
             self.PLAYER_UESRNAME = self.PLAYER_UESRNAME.strip(";;")
+        if self.PLAYER_UESRNAME.strip() == "":
+            self.PLAYER_UESRNAME = "Platbot9000"
         self.PLAYER_MISSILE_SE.set_volume(self.SE_VOL)
         self.PLAYER_FORCE_SE.set_volume(self.SE_VOL)
         self.PLAYER_DAMAGE_SE.set_volume(self.SE_VOL)
@@ -135,6 +123,21 @@ class Config:
 
     def scores(self):
         self.PLAYER_PJUMP_SE.play()
+        self.scores_menu.clear()
+        self.scores_menu.add.label("Player Scores\n--------------------------")
+        if os.path.exists("player_scores.txt"):
+            score_table = self.scores_menu.add.table()
+            score_table.default_cell_padding=5
+            score_table.add_row(("Rank", "Username", "Score"), cell_font_size=20, cell_border_width=0)
+            with open("player_scores.txt", "r", encoding="utf-8") as file:
+                rank = 1
+                for line in file:
+                    line = line.split(";;")
+                    score_table.add_row((f"{rank}.", f"{line[0]}\t\t", line[1].rstrip()), cell_font_size=20, cell_border_width=0)
+                    rank += 1
+        else:
+            self.scores_menu.add.label("No one played yet :(")
+        self.scores_menu.add.button("Back", self.quit_scores)
         self.main_menu._open(self.scores_menu)
 
 
