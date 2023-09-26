@@ -206,6 +206,7 @@ while True:
         draw((good_entities, bad_entities, jump_entities, player_missiles, enemy_missiles, player_force), (ammo_bags, shield_bags), player, enemy, config.GAME_BG_SP, config.PLAYER_MISSILE_LIMIT)
         update(good_entities, player)
         # operations
+        player.animation_now = "idle"
         player.move()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -290,6 +291,10 @@ while True:
 
         
         # updates
+        if player.frame_time <= 0:
+            player.update_sprite()
+        player.frame_time -= 1
+        
         if player.rect.top <= HEIGHT/2:
             player.score += 1
             enemy.score -= 1

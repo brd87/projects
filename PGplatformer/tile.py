@@ -5,7 +5,7 @@ from pygame.locals import *
 class Tile:
     def __init__(self, sprite_width, sprite_height, pos_x, pos_y, image, border):
         self.border = border
-        self.surf = pygame.transform.scale(pygame.image.load(image), (sprite_width, sprite_height))
+        self.surf = pygame.transform.scale(pygame.image.load(image).convert(), (sprite_width, sprite_height))
         self.rect = self.surf.get_rect(center = (pos_x, pos_y))
         self.speed = random.randint(-2, 2)
         self.if_move = True

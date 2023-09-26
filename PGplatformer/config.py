@@ -128,12 +128,12 @@ class Config:
         if os.path.exists("player_scores.txt"):
             score_table = self.scores_menu.add.table()
             score_table.default_cell_padding=5
-            score_table.add_row(("Rank", "Username", "Score"), cell_font_size=20, cell_border_width=0)
+            score_table.add_row(("Rank", "Username\t\t", "Score"), cell_font_size=20, cell_border_width=0)
             with open("player_scores.txt", "r", encoding="utf-8") as file:
                 rank = 1
                 for line in file:
                     line = line.split(";;")
-                    score_table.add_row((f"{rank}.", f"{line[0]}\t\t", line[1].rstrip()), cell_font_size=20, cell_border_width=0)
+                    score_table.add_row((f"{rank}.", f"{line[0]}", line[1].rstrip()), cell_font_size=20, cell_border_width=0)
                     rank += 1
         else:
             self.scores_menu.add.label("No one played yet :(")

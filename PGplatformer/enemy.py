@@ -5,7 +5,8 @@ from pygame.locals import *
 class Enemy:
     def __init__(self, WIDTH, prep):
         self.border = WIDTH
-        self.surf = pygame.image.load("sprites/enemy.png")
+        self.surf = pygame.image.load("sprites/enemy.png").convert()
+        self.surf.set_colorkey((0,0,0))
         self.rect = self.surf.get_rect(center = (WIDTH/2, 66))
         self.dif = [-1, 1]
         self.speed = random.choice(self.dif)
