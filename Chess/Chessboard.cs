@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Chess
+namespace Chessboard
 {
     class Chessboard
     {
-        int[,] board = new int[8,8]; //[y,x]
-        List<Piece> whitePieces = new List<Piece>();
-        List<Piece> blackPieces = new List<Piece>();
+        int[,] Board = new int[8,8]; //[y,x]
+        List<Piece.Piece> whitePieces = new List<Piece.Piece>();
+        List<Piece.Piece> blackPieces = new List<Piece.Piece>();
         int White = 16;
         int Black = 16;
 
@@ -26,37 +26,37 @@ namespace Chess
                 for (int i=0; i < 8; i++)
                 {
                     randomID = random.Next(1, 1000);
-                    board[pawnRow, i] = randomID;
-                    whitePieces.Add(new Pawn(randomID, color));
+                    Board[pawnRow, i] = randomID;
+                    whitePieces.Add(new Pawn.Pawn(randomID, color));
                 }
 
                 randomID = random.Next(1, 1000);
-                board[figuresRow, 0] = randomID;
-                whitePieces.Add(new Rook(randomID, color));
+                Board[figuresRow, 0] = randomID;
+                whitePieces.Add(new Rook.Rook(randomID, color));
                 randomID = random.Next(1, 1000);
                 Board[figuresRow, 7] = randomID;
-                whitePieces.Add(new Rook(randomID, color));
+                whitePieces.Add(new Rook.Rook(randomID, color));
 
                 randomID = random.Next(1, 1000);
-                board[figuresRow, 1] = randomID;
-                whitePieces.Add(new Knight(randomID, color));
+                Board[figuresRow, 1] = randomID;
+                whitePieces.Add(new Knight.Knight(randomID, color));
                 randomID = random.Next(1, 1000);
-                board[figuresRow, 6] = randomID;
-                whitePieces.Add(new Knight(randomID, color));
+                Board[figuresRow, 6] = randomID;
+                whitePieces.Add(new Knight.Knight(randomID, color));
 
                 randomID = random.Next(1, 1000);
-                board[figuresRow, 2] = randomID;
-                whitePieces.Add(new Bishop(randomID, color));
+                Board[figuresRow, 2] = randomID;
+                whitePieces.Add(new Bishop.Bishop(randomID, color));
                 randomID = random.Next(1, 1000);
-                board[figuresRow, 5] = randomID;
-                whitePieces.Add(new Bishop(randomID, color));
-
+                Board[figuresRow, 5] = randomID;
+                whitePieces.Add(new Bishop.Bishop(randomID, color));
+                
                 randomID = random.Next(1, 1000);
-                board[figuresRow, q] = randomID;
-                whitePieces.Add(new Queen(randomID, color));
+                Board[figuresRow, q] = randomID;
+                whitePieces.Add(new Queen.Queen(randomID, color));
                 randomID = random.Next(1, 1000);
-                board[figuresRow, k] = randomID;
-                whitePieces.Add(new King(randomID, color));
+                Board[figuresRow, k] = randomID;
+                whitePieces.Add(new King.King(randomID, color));
 
                 figuresRow = 7;
                 pawnRow = 6;
