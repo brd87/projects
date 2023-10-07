@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Chess
+namespace Piece
 {
     class Piece
     {
@@ -16,39 +16,39 @@ namespace Chess
             Color = iniColor;
         }
 
-        public List<(int, int)> AskForMoves(int xPos, int yPos)
+        public virtual List<(int, int)> AskForMoves(int xPos, int yPos)
         {
             List<(int, int)> moves = new List<(int, int)>();
             moves.Add((-1,-1));
             return moves;
         }
 
-        protected void ModifyID(int newID)
+        public void ModifyID(int newID)
         {
             ID = newID;
         }
 
-        protected int ReturnID()
+        public int ReturnID()
         {
             return ID;
         }
 
-        protected void ModifyColor(int newColor)
+        public void ModifyColor(int newColor)
         {
             Color = newColor;
         }
 
-        protected int ReturnColor()
+        public int ReturnColor()
         {
             return Color;
         }
 
-        protected void ModifyIfMoved(bool newIfMoved)
+        public void ModifyIfMoved(bool newIfMoved)
         {
             IfMoved = newIfMoved;
         }
 
-        protected bool ReturnIfMoved()
+        public bool ReturnIfMoved()
         {
             return IfMoved;
         }

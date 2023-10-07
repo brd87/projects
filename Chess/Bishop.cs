@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Chess
+namespace Bishop
 {
-    class Bishop : Piece
+    class Bishop : Piece.Piece
     {
         public Bishop(int iniID, int iniColor) : base(iniID, iniColor)
         {
 
         }
-        public List<(int, int)> AskForMoves(int yPos, int xPos)
+        public override List<(int, int)> AskForMoves(int yPos, int xPos)
         {
             List<(int, int)> moves = new List<(int, int)>();
             int[,] possibleMoves =
