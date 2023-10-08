@@ -115,9 +115,11 @@ namespace Chessboard
         static void Main(string[] args)
         {
             Chessboard chessboard = new Chessboard();
+            //test
+            //////////////////////////////////////////////////////////////////////////////////////
             chessboard.ConsoleDisplay();
-            int py = 1;
-            int px = 2;
+            int py = 6;
+            int px = 3;
             List<(int, int)> askMoveTest = chessboard.GetMoves(py, px);
             Console.WriteLine($"For {chessboard.Board[py, px]}");
             if (askMoveTest.Count == 0)
@@ -132,7 +134,7 @@ namespace Chessboard
                     Console.Write($"({y}:{x} is:{chessboard.Board[y, x]}), ");
                 }
             }
-            
+            //////////////////////////////////////////////////////////////////////////////////////
         }
     }
 }
