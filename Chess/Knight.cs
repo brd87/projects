@@ -10,7 +10,7 @@ namespace Knight
         {
 
         }
-        public override List<(int, int)> AskForMoves(int yPos, int xPos)
+        public override List<(int, int)> AskForMoves(int yPos, int xPos, int[,] board)
         {
             List<(int, int)> moves = new List<(int, int)>();
             int[,] possibleMoves =
@@ -23,7 +23,10 @@ namespace Knight
                 int newX = xPos + possibleMoves[i, 1];
                 if (newY >= 0 && newY < 8 && newX >= 0 && newX < 8)
                 {
-                    moves.Add((newY, newX));
+                    if ((ReturnColor() == 1 && board[newY, newX] > 20000) || (ReturnColor() == -1 && board[newY, newX] < 20000 && board[newY, newX] != 0) || board[newY, newX] == 0)
+                    {
+                        moves.Add((newY, newX));
+                    }
                 }
             }
             return moves;

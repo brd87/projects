@@ -16,7 +16,7 @@ namespace Piece
             Color = iniColor;
         }
 
-        public virtual List<(int, int)> AskForMoves(int xPos, int yPos)
+        public virtual List<(int, int)> AskForMoves(int xPos, int yPos, int[,] board)
         {
             List<(int, int)> moves = new List<(int, int)>();
             moves.Add((-1,-1));
