@@ -6,7 +6,7 @@ namespace MGChess.Pieces
 {
     public class Rook : Piece
     {
-        public Rook(int iniID, int iniColor) : base(iniID, iniColor)
+        public Rook(int iniID, int iniColor, int row, int col) : base(iniID, iniColor, row, col)
         {
 
         }

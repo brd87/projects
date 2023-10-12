@@ -6,7 +6,7 @@ namespace MGChess.Pieces
 {
     public class King : Piece
     {
-        public King(int iniID, int iniColor) : base(iniID, iniColor)
+        public King(int iniID, int iniColor, int row, int col) : base(iniID, iniColor, row, col)
         {
 
         }

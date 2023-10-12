@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,7 +26,7 @@ namespace MGChess
         */
         public Chessboard()
         {
-            int p = 0;
+            int row = 0;
             int gr = 10000;
             int figuresRow = 0;
             int pawnRow = 1;
@@ -40,38 +42,39 @@ namespace MGChess
                 {
                     randomID = random.Next(1, 1000) + gr;
                     Board[pawnRow, i] = randomID;
-                    group.Add(new MGChess.Pieces.Pawn(randomID, color));
+                    group.Add(new MGChess.Pieces.Pawn(randomID, color, row, 0));
                 }
 
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, 0] = randomID;
-                group.Add(new MGChess.Pieces.Rook(randomID, color));
+                group.Add(new MGChess.Pieces.Rook(randomID, color, row, 1));
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, 7] = randomID;
-                group.Add(new MGChess.Pieces.Rook(randomID, color));
+                group.Add(new MGChess.Pieces.Rook(randomID, color, row, 1));
 
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, 1] = randomID;
-                group.Add(new MGChess.Pieces.Knight(randomID, color));
+                group.Add(new MGChess.Pieces.Knight(randomID, color, row, 2));
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, 6] = randomID;
-                group.Add(new MGChess.Pieces.Knight(randomID, color));
+                group.Add(new MGChess.Pieces.Knight(randomID, color, row, 2));
 
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, 2] = randomID;
-                group.Add(new MGChess.Pieces.Bishop(randomID, color));
+                group.Add(new MGChess.Pieces.Bishop(randomID, color, row, 3));
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, 5] = randomID;
-                group.Add(new MGChess.Pieces.Bishop(randomID, color));
+                group.Add(new MGChess.Pieces.Bishop(randomID, color, row, 3));
 
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, q] = randomID;
-                group.Add(new MGChess.Pieces.Queen(randomID, color));
+                group.Add(new MGChess.Pieces.Queen(randomID, color, row, 4));
                 randomID = random.Next(1, 1000) + gr;
                 Board[figuresRow, k] = randomID;
-                group.Add(new MGChess.Pieces.King(randomID, color));
+                group.Add(new MGChess.Pieces.King(randomID, color, row, 5));
 
                 Pieces.Add(group);
+                row = 1;
                 gr = 20000;
                 figuresRow = 7;
                 pawnRow = 6;
@@ -86,6 +89,22 @@ namespace MGChess
             int id = Board[y, x];
             int[] l = GetLocation(id);
             return Pieces[l[0]][l[1]].AskForMoves(y, x, Board);
+        }
+
+        public void drawPieces(Texture2D texture, SpriteBatch spriteBatch)
+        {
+            for (int row = 0; row < 8; row++)
+            { 
+                for (int col = 0; col < 8; col++)
+                {
+                    int id = Board[row, col];
+                    if (id == 0)
+                    {  continue; }
+                    Vector2 location = new Vector2(col * 32, row * 32);
+                    int[] l = GetLocation(id);
+                    Pieces[l[0]][l[1]].Draw(texture, spriteBatch, location);
+                }
+            }
         }
 
         public void DebugDisplay()

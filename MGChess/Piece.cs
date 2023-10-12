@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,11 +11,16 @@ namespace MGChess
         int ID;
         int Color; //1 - white, -1 - black
         bool IfMoved = false;
+        int Row;
+        int Col;
 
-        public Piece(int iniID, int iniColor)
+        public Piece(int iniID, int iniColor, int row, int col)
         {
             ID = iniID;
             Color = iniColor;
+            Row = row;
+            Col = col;
+
         }
 
         public virtual List<(int, int)> AskForMoves(int xPos, int yPos, int[,] board)
@@ -21,6 +28,14 @@ namespace MGChess
             List<(int, int)> moves = new List<(int, int)>();
             moves.Add((-1,-1));
             return moves;
+        }
+
+        public void Draw(Texture2D texture, SpriteBatch spriteBatch, Vector2 location)
+        {
+            Texture2D Texture = texture;
+            Rectangle sourceRectangle = new Rectangle(32*Col, 32*Row, 32,32);
+            Rectangle target = new Rectangle((int)location.X, (int)location.Y, 32, 32);
+            spriteBatch.Draw(Texture, target, sourceRectangle, Microsoft.Xna.Framework.Color.White);
         }
 
         public void ModifyID(int newID)
@@ -52,6 +67,5 @@ namespace MGChess
         {
             return IfMoved;
         }
-
     }
 }

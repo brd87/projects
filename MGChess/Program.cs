@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Diagnostics;
-//using var game = new MGChess.Chess();
-//game.Run();
+using var game = new MGChess.Chess();
+game.Run();
 namespace MGChess
 {
     public class Program

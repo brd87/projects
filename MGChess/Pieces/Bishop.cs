@@ -6,9 +6,8 @@ namespace MGChess.Pieces
 {
     public class Bishop : Piece
     {
-        public Bishop(int iniID, int iniColor) : base(iniID, iniColor)
+        public Bishop(int iniID, int iniColor, int row, int col) : base(iniID, iniColor, row, col)
         {
-
         }
         public override List<(int, int)> AskForMoves(int yPos, int xPos, int[,] board)
         {
