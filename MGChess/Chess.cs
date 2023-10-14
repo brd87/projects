@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MGChess
 {
@@ -11,7 +13,8 @@ namespace MGChess
         Texture2D pieceSprites;
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
-
+        List<(int, int)> moves;
+        (int col, int row) source;
         public Chess()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -27,6 +30,12 @@ namespace MGChess
             _graphics.PreferredBackBufferWidth = 256;
             _graphics.PreferredBackBufferHeight = 256;
             _graphics.ApplyChanges();
+
+            moves = new List<(int, int)>
+            {
+                (-1, -1)
+            };
+            source = (-1, -1);
             base.Initialize();
 
         }
@@ -46,6 +55,43 @@ namespace MGChess
                 Exit();
 
             // TODO: Add your update logic here
+            MouseState state = Mouse.GetState();
+            if (state.RightButton == ButtonState.Pressed)
+            {
+                int col = state.Y / 32;
+                int row = state.X / 32;
+                if (chessboard.Board[col, row] != 0)
+                {
+                    moves = chessboard.GetMoves(col, row);
+                    
+                    if (moves.Count != 0)
+                    {
+                        if (moves[0] != (-1,-1))
+                        {
+                            source.col = col;
+                            source.row = row;
+                        }
+                    }
+                }
+                
+            }
+            if (state.LeftButton == ButtonState.Pressed)
+            {
+                int col = state.Y / 32;
+                int row = state.X / 32;
+                
+                foreach ((int mCol, int mRow) in moves)
+                {
+                    if(mCol == col && mRow == row && source != (-1,-1))
+                    {
+                        chessboard.DoMove(source, (mCol, mRow));
+                        source = (-1,-1);
+                        moves.Clear();
+                        break;
+                    }
+                }
+            }
+
 
             base.Update(gameTime);
         }
@@ -56,9 +102,7 @@ namespace MGChess
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin();
-
             _spriteBatch.Draw(background, new Rectangle(0, 0, 256, 256), Color.White);
-            //chessboard.Pieces[0][1].Draw(pieceSprites, _spriteBatch, new Vector2(0,0));
             chessboard.drawPieces(pieceSprites, _spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);

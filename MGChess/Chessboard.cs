@@ -17,6 +17,7 @@ namespace MGChess
         public int[,] Board = new int[8, 8]; //[y,x]
         //public List<List<Piece>> Pieces { get; set; } = new List<List<Piece>>();
         public List<List<Piece>> Pieces = new List<List<Piece>>();
+        int turn = 1;
         int White = 16;
         int Black = 16;
         /*
@@ -88,7 +89,34 @@ namespace MGChess
         {
             int id = Board[y, x];
             int[] l = GetLocation(id);
-            return Pieces[l[0]][l[1]].AskForMoves(y, x, Board);
+            List<(int, int)> moves = new List<(int, int)>();
+            if (Pieces[l[0]][l[1]].ReturnColor() == turn)
+            {
+                moves = Pieces[l[0]][l[1]].AskForMoves(y, x, Board);
+            }
+            else
+            {
+                moves.Add((-1, -1));
+            }
+            return moves;
+        }
+
+        public void DoMove((int col, int row) ogLocation, (int col, int row) target)
+        {
+            int pieceId = Board[ogLocation.col, ogLocation.row];
+            int targetId = Board[target.col, target.row];
+            if (targetId != 0)
+            {
+                int[] l = GetLocation(targetId);
+                Pieces[l[0]].RemoveAt(l[1]);
+            }
+            if (pieceId != targetId && pieceId != 0)
+            {
+                Board[ogLocation.col, ogLocation.row] = 0;
+                Board[target.col, target.row] = pieceId;
+            }
+            
+            turn *= -1;
         }
 
         public void drawPieces(Texture2D texture, SpriteBatch spriteBatch)

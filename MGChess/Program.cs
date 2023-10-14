@@ -28,9 +28,11 @@ namespace MGChess
                 {
                     Debug.Write($"({y}:{x} is:{chessboard.Board[y, x]}), ");
                 }
+                chessboard.DoMove((py, px), askMoveTest[0]);
+                chessboard.DebugDisplay();
             }
             //////////////////////////////////////////////////////////////////////////////////////
-            
+
         }
     }
 }
