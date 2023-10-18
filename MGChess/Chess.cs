@@ -62,6 +62,7 @@ namespace MGChess
                 int row = state.X / 32;
                 if (chessboard.Board[col, row] != 0)
                 {
+                    //do something with a king if in danger
                     moves = chessboard.GetMoves(col, row);
                     
                     if (moves.Count != 0)
@@ -84,6 +85,7 @@ namespace MGChess
                 {
                     if(mCol == col && mRow == row && source != (-1,-1))
                     {
+                        //do something with a king if in danger
                         chessboard.DoMove(source, (mCol, mRow));
                         source = (-1,-1);
                         moves.Clear();

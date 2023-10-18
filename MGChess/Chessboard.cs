@@ -92,18 +92,23 @@ namespace MGChess
         
         public void ChcekKings(int color)
         {
-            List<(int, int)> moves = new List<(int, int)>();
-            for (int side=0; side < 2; side++)
+            int side;
+            if(color == 1)
             {
-                foreach(Piece piece in Pieces[side])
+                side = 0;
+            }
+            else
+            {
+                side = 1;
+            }
+            List<(int, int)> moves = new List<(int, int)>();
+            foreach (Piece piece in Pieces[side])
+            {
+                (int col, int row) l = piece.ReturnLoc();
+                moves = GetMoves(l.col, l.row);
+                if (ChcekMoves(moves) == true)
                 {
-                    (int col, int row) l = piece.ReturnLoc();
-                    moves = GetMoves(l.col, l.row);
-                    if(ChcekMoves(moves) == true)
-                    {
-
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -112,18 +117,15 @@ namespace MGChess
         {
             foreach ((int col, int row) in moves)
             {
-                if ((Board[col, row] == Kings[0] && turn == -1) || (Board[col, row] == Kings[1] && turn == 1))
+                if (Board[col, row] == Kings[0] && turn == -1)
                 {
-                    if (Board[col, row] == Kings[0])
-                    {
-                        KingsDanger[0] = true;
-                        return true;
-                    }
-                    else
-                    {
-                        KingsDanger[1] = true;
-                        return true;
-                    }
+                    KingsDanger[0] = true;
+                    return true;
+                }
+                if (Board[col, row] == Kings[1] && turn == 1)
+                {
+                    KingsDanger[1] = true;
+                    return true;
                 }
             }
             return false;
