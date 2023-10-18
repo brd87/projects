@@ -64,7 +64,6 @@ namespace MGChess
                 {
                     //do something with a king if in danger
                     moves = chessboard.GetMoves(col, row);
-                    
                     if (moves.Count != 0)
                     {
                         if (moves[0] != (-1,-1))
@@ -74,18 +73,19 @@ namespace MGChess
                         }
                     }
                 }
-                
             }
+
             if (state.LeftButton == ButtonState.Pressed)
             {
                 int col = state.Y / 32;
                 int row = state.X / 32;
-                
                 foreach ((int mCol, int mRow) in moves)
                 {
                     if(mCol == col && mRow == row && source != (-1,-1))
                     {
                         //do something with a king if in danger
+                        chessboard.ChcekKings(1);
+                        chessboard.ChcekKings(-1);
                         chessboard.DoMove(source, (mCol, mRow));
                         source = (-1,-1);
                         moves.Clear();

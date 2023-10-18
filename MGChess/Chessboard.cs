@@ -117,16 +117,20 @@ namespace MGChess
         {
             foreach ((int col, int row) in moves)
             {
-                if (Board[col, row] == Kings[0] && turn == -1)
+                if((col, row) != (-1, -1))
                 {
-                    KingsDanger[0] = true;
-                    return true;
+                    if (Board[col, row] == Kings[0] && turn == -1)
+                    {
+                        KingsDanger[0] = true;
+                        return true;
+                    }
+                    if (Board[col, row] == Kings[1] && turn == 1)
+                    {
+                        KingsDanger[1] = true;
+                        return true;
+                    }
                 }
-                if (Board[col, row] == Kings[1] && turn == 1)
-                {
-                    KingsDanger[1] = true;
-                    return true;
-                }
+                
             }
             return false;
         }
@@ -135,11 +139,20 @@ namespace MGChess
         public List<(int, int)> GetMoves(int y, int x)
         {
             int id = Board[y, x];
+            if (KingsDanger[0] == true && turn == 1)
+            {
+                id = Kings[0];
+            }
+            if (KingsDanger[1] == true && turn == -1)
+            {
+                id = Kings[1];
+            }
+
             int[] l = GetLocation(id);
             List<(int, int)> moves = new List<(int, int)>();
             if (Pieces[l[0]][l[1]].ReturnColor() == turn)
             {
-                moves = Pieces[l[0]][l[1]].AskForMoves(y, x, Board);
+                moves = Pieces[l[0]][l[1]].AskForMoves(y, x, Board); //here
             }
             else
             {
