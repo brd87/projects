@@ -13,6 +13,8 @@ namespace MGChess
         bool IfMoved = false;
         int Row;
         int Col;
+        int LRow;
+        int LCol;
 
         public Piece(int iniID, int iniColor, int row, int col)
         {
@@ -67,5 +69,18 @@ namespace MGChess
         {
             return IfMoved;
         }
+
+        public void ModifyLoc((int col, int row) loc)
+        {
+            LCol = loc.col;
+            LRow = loc.row;
+        }
+
+        public (int col, int row) ReturnLoc()
+        {
+            return (LCol, LRow);
+        }
+        
+        
     }
 }

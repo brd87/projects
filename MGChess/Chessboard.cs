@@ -20,6 +20,8 @@ namespace MGChess
         int turn = 1;
         int White = 16;
         int Black = 16;
+        int[] Kings = new int[2]; //0-white, 1-black
+        bool[] KingsDanger = new bool[2];
         /*
         int[,] Board = new int[8,8]; //[y,x]
         List<List<Piece>> Pieces = new List<List<Piece>>();
@@ -74,6 +76,9 @@ namespace MGChess
                 Board[figuresRow, k] = randomID;
                 group.Add(new MGChess.Pieces.King(randomID, color, row, 5));
 
+                Kings[row] = randomID;
+                KingsDanger[row] = false;
+
                 Pieces.Add(group);
                 row = 1;
                 gr = 20000;
@@ -84,6 +89,46 @@ namespace MGChess
                 k = 3;
             }
         }
+        
+        public void ChcekKings(int color)
+        {
+            List<(int, int)> moves = new List<(int, int)>();
+            for (int side=0; side < 2; side++)
+            {
+                foreach(Piece piece in Pieces[side])
+                {
+                    (int col, int row) l = piece.ReturnLoc();
+                    moves = GetMoves(l.col, l.row);
+                    if(ChcekMoves(moves) == true)
+                    {
+
+                        break;
+                    }
+                }
+            }
+        }
+        
+        bool ChcekMoves(List<(int, int)> moves)
+        {
+            foreach ((int col, int row) in moves)
+            {
+                if ((Board[col, row] == Kings[0] && turn == -1) || (Board[col, row] == Kings[1] && turn == 1))
+                {
+                    if (Board[col, row] == Kings[0])
+                    {
+                        KingsDanger[0] = true;
+                        return true;
+                    }
+                    else
+                    {
+                        KingsDanger[1] = true;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
 
         public List<(int, int)> GetMoves(int y, int x)
         {
@@ -115,7 +160,9 @@ namespace MGChess
                 Board[ogLocation.col, ogLocation.row] = 0;
                 Board[target.col, target.row] = pieceId;
             }
-            
+            int[] sl = GetLocation(pieceId);
+            Pieces[sl[0]][sl[1]].ModifyLoc(target);
+
             turn *= -1;
         }
 
