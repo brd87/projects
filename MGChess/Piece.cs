@@ -30,6 +30,14 @@ namespace MGChess
             return moves;
         }
 
+        public void DidMove(int y, int x)
+        {
+            if(Col != y && Row != x && IfMoved == false)
+            {
+                IfMoved = true;
+            }
+        }
+
         public void Draw(Texture2D texture, SpriteBatch spriteBatch, Vector2 location)
         {
             Texture2D Texture = texture;

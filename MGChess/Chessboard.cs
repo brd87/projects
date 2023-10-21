@@ -175,8 +175,8 @@ namespace MGChess
                 Board[target.col, target.row] = pieceId;
             }
             int[] sl = GetLocation(pieceId);
+            Pieces[sl[0]][sl[1]].DidMove(ogLocation.col, ogLocation.row);
             Pieces[sl[0]][sl[1]].ModifyLoc(target);
-
             turn *= -1;
         }
 
