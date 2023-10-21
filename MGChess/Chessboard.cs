@@ -1,13 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace MGChess
 {
@@ -18,8 +13,6 @@ namespace MGChess
         //public List<List<Piece>> Pieces { get; set; } = new List<List<Piece>>();
         public List<List<Piece>> Pieces = new List<List<Piece>>();
         int turn = 1;
-        int White = 16;
-        int Black = 16;
         int[] Kings = new int[2]; //0-white, 1-black
         bool[] KingsDanger = new bool[2];
         /*
@@ -90,7 +83,7 @@ namespace MGChess
             }
         }
         
-        public void ChcekKings(int color)
+        public void CheckKings(int color)
         {
             int side;
             if(color == 1)
@@ -135,8 +128,7 @@ namespace MGChess
             return false;
         }
         
-
-        public List<(int, int)> GetMoves(int y, int x)
+        public (int y, int x) IfPossible(int y, int x)
         {
             int id = Board[y, x];
             if (KingsDanger[0] == true && turn == 1)
@@ -147,7 +139,14 @@ namespace MGChess
             {
                 id = Kings[1];
             }
+            int[] l = GetLocation(id);
+            (y, x) = Pieces[l[0]][l[1]].ReturnLoc();
+            return (y, x);
+        }
 
+        public List<(int, int)> GetMoves(int y, int x)
+        {
+            int id = Board[y, x];
             int[] l = GetLocation(id);
             List<(int, int)> moves = new List<(int, int)>();
             if (Pieces[l[0]][l[1]].ReturnColor() == turn)
@@ -197,19 +196,9 @@ namespace MGChess
             }
         }
 
-        public void DebugDisplay()
+        public int ReturnTurn()
         {
-            Debug.WriteLine(Board);
-            Debug.WriteLine("Hello Chess!");
-            Debug.WriteLine($"White Pieces: {White} | Black Pieces: {Black}\n");
-            for (int row = 0; row < 8; row++)
-            {
-                for (int cell = 0; cell < 8; cell++)
-                {
-                    Debug.Write($"{Board[row, cell]}\t");
-                }
-                Debug.WriteLine("\n");
-            }
+            return turn;
         }
 
         private int[] GetLocation(int id)

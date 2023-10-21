@@ -11,6 +11,9 @@ namespace MGChess
         Chessboard chessboard;
         Texture2D background;
         Texture2D pieceSprites;
+        Texture2D mark;
+        Texture2D wTurn;
+        Texture2D bTurn;
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
         List<(int, int)> moves;
@@ -47,6 +50,9 @@ namespace MGChess
             // TODO: use this.Content to load your game content here
             background = Content.Load<Texture2D>("board");
             pieceSprites = Content.Load<Texture2D>("pieces");
+            mark = Content.Load<Texture2D>("mark");
+            wTurn = Content.Load<Texture2D>("wturn");
+            bTurn = Content.Load<Texture2D>("bturn");
         }
 
         protected override void Update(GameTime gameTime)
@@ -63,6 +69,7 @@ namespace MGChess
                 if (chessboard.Board[col, row] != 0)
                 {
                     //do something with a king if in danger
+                    //(col, row) = chessboard.IfPossible(col, row);
                     moves = chessboard.GetMoves(col, row);
                     if (moves.Count != 0)
                     {
@@ -84,8 +91,8 @@ namespace MGChess
                     if(mCol == col && mRow == row && source != (-1,-1))
                     {
                         //do something with a king if in danger
-                        chessboard.ChcekKings(1);
-                        chessboard.ChcekKings(-1);
+                        //chessboard.CheckKings(1);
+                        //chessboard.CheckKings(-1);
                         chessboard.DoMove(source, (mCol, mRow));
                         source = (-1,-1);
                         moves.Clear();
@@ -106,6 +113,18 @@ namespace MGChess
             _spriteBatch.Begin();
             _spriteBatch.Draw(background, new Rectangle(0, 0, 256, 256), Color.White);
             chessboard.drawPieces(pieceSprites, _spriteBatch);
+            if(chessboard.ReturnTurn() == 1)
+            {
+                _spriteBatch.Draw(wTurn, new Rectangle(0, 0, 256, 256), Color.White);
+            }
+            else
+            {
+                _spriteBatch.Draw(bTurn, new Rectangle(0, 0, 256, 256), Color.White);
+            }
+            if(source != (-1,-1))
+            {
+                _spriteBatch.Draw(mark, new Rectangle(source.row * 32, source.col * 32, 32, 32), Color.White);
+            }
             _spriteBatch.End();
             base.Draw(gameTime);
         }
